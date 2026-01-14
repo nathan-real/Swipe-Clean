@@ -22,13 +22,26 @@ class MyApp extends StatelessWidget {
             builder: (context) {
               return Column(
                 children: [
+                  const SizedBox(height: 20),
+
                   const Text(
                     'Hello, World!',
                     style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
                   ),
+                  Image.asset(
+                    'assets/images/Kubby_Skate.png',
+                    width: 200,
+                    height: 200,
+                    fit: BoxFit.cover,
+                  ),
                   const SizedBox(height: 20),
 
                   ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color.fromARGB(255, 51, 59, 150),
+                      foregroundColor: Colors.white,
+                      overlayColor: const Color.fromARGB(255, 255, 255, 255),
+                    ),
                     onPressed: () {
                       print('Click!');
                     },
