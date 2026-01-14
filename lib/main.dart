@@ -1,58 +1,51 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_card_swiper/flutter_card_swiper.dart';
+import 'pages/home_page.dart';
+import 'app_colors.dart';
 
-void main() => runApp(const MyApp());
+// Variable global pour le thème
+final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
+
+void main() {
+  runApp(const MyApp());
+}
 
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: Scaffold(
-        backgroundColor: Color.fromARGB(255, 30, 30, 30),
-        appBar: AppBar(
-          title: const Text('Swipe Clean'),
-          centerTitle: true,
-          foregroundColor: Color.fromARGB(255, 255, 255, 255),
-          backgroundColor: const Color.fromARGB(255, 51, 59, 150),
-        ),
-        body: Center(
-          child: Builder(
-            builder: (context) {
-              return Column(
-                children: [
-                  const SizedBox(height: 20),
+    // On écoute ThemeMode
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeNotifier,
+      builder: (context, currentMode, child) {
+        return MaterialApp(
+          title: 'Swipe Clean',
 
-                  const Text(
-                    'Hello, World!',
-                    style: TextStyle(color: Color.fromARGB(255, 255, 255, 255)),
-                  ),
-                  Image.asset(
-                    'assets/images/Kubby_Skate.png',
-                    width: 200,
-                    height: 200,
-                    fit: BoxFit.cover,
-                  ),
-                  const SizedBox(height: 20),
-
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color.fromARGB(255, 51, 59, 150),
-                      foregroundColor: Colors.white,
-                      overlayColor: const Color.fromARGB(255, 255, 255, 255),
-                    ),
-                    onPressed: () {
-                      print('Click!');
-                    },
-                    child: const Text('A button'),
-                  ),
-                ],
-              );
-            },
+          themeMode: currentMode,
+          // Paramètres pour le thème clair
+          theme: ThemeData(
+            brightness: Brightness.light,
+            scaffoldBackgroundColor: AppColors.textWhite,
+            primaryColor: AppColors.main,
+            appBarTheme: const AppBarTheme(
+              backgroundColor: AppColors.main,
+              foregroundColor: AppColors.textWhite,
+            ),
           ),
-        ),
-      ),
+
+          // Paramètres pour le thème dark
+          darkTheme: ThemeData(
+            brightness: Brightness.dark,
+            scaffoldBackgroundColor: AppColors.backgroundDark,
+            appBarTheme: const AppBarTheme(
+              backgroundColor: AppColors.main,
+              foregroundColor: AppColors.textWhite,
+            ),
+          ),
+
+          home: const HomePage(),
+        );
+      },
     );
   }
 }
