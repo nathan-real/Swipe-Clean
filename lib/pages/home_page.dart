@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:swipe_clean/app_colors.dart';
 import 'settings_page.dart';
+import '../widgets/custom_header.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -34,28 +35,7 @@ class _HomePageState extends State<HomePage> {
         children: [
           const SizedBox(height: 20),
 
-          Row(
-            children: [
-              const SizedBox(width: 48),
-              const Expanded(
-                child: Text(
-                  'Swipe Clean',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.settings),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (context) => const SettingsPage(),
-                    ),
-                  );
-                },
-              ),
-            ],
-          ),
+          const CustomHeader(),
 
           Expanded(
             child: Column(
