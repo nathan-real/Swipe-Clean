@@ -16,7 +16,9 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     // On écoute ThemeMode
     return ValueListenableBuilder<ThemeMode>(
+      // On écoute cette variable
       valueListenable: themeNotifier,
+      // Le builder permet de construire dès que la variable écoutée bouge
       builder: (context, currentMode, child) {
         return MaterialApp(
           title: 'Swipe Clean',

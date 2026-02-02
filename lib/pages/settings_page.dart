@@ -26,6 +26,7 @@ class _SettingsPageState extends State<SettingsPage> {
         children: [
           const SizedBox(height: 20),
           ListTile(
+            contentPadding: const EdgeInsets.only(left: 30.0, right: 30.0),
             leading: const Icon(Icons.dark_mode),
             title: const Text("Mode Sombre"),
             trailing: Switch(

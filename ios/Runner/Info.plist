@@ -45,5 +45,9 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>Nous avons besoin d'accéder à tes photos pour le tri.</string>
+	<key>NSPhotoLibraryAddUsageDescription</key>
+	<string>Nous avons besoin d'accéder pour supprimer des photos.</string>
 </dict>
 </plist>
