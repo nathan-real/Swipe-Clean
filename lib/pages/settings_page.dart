@@ -1,47 +1,48 @@
-import 'package:flutter/material.dart';
-import '../main.dart';
+  import 'package:flutter/material.dart';
+  import '../main.dart';
 
-class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+  class SettingsPage extends StatefulWidget {
+    const SettingsPage({super.key});
 
-  @override
-  State<SettingsPage> createState() => _SettingsPageState();
-}
-
-// Class state car on a besoin de setState pour l'animation du bouton
-class _SettingsPageState extends State<SettingsPage> {
-  // Méthodes
-  //Quand le swith passe à ON il envoit true
-  void toggleTheme(bool isDark) {
-    themeNotifier.value = isDark ? ThemeMode.dark : ThemeMode.light;
+    @override
+    State<SettingsPage> createState() => _SettingsPageState();
   }
 
-  @override
-  Widget build(BuildContext context) {
-    bool isCurrentlyDark = themeNotifier.value == ThemeMode.dark;
+  // Class state car on a besoin de setState pour l'animation du bouton
+  class _SettingsPageState extends State<SettingsPage> {
+    // Méthodes
+    //Quand le swith passe à ON il envoit true
+    void toggleTheme(bool isDark) {
+      themeNotifier.value = isDark ? ThemeMode.dark : ThemeMode.light;
+    }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text('Paramètres')),
-      body: ListView(
-        children: [
-          const SizedBox(height: 20),
-          ListTile(
-            contentPadding: const EdgeInsets.only(left: 30.0, right: 30.0),
-            leading: const Icon(Icons.dark_mode),
-            title: const Text("Mode Sombre"),
-            trailing: Switch(
-              // Valeur du switch quand on rentre dans la page
-              value: isCurrentlyDark,
-              //Quand le swith passe à ON il envoit true
-              onChanged: (val) {
-                toggleTheme(val);
-                // On relance le build pour afficher les modifs, donc pas de fonction à mettre
-                setState(() {});
-              },
+    @override
+    Widget build(BuildContext context) {
+      final bool isCurrentlyDark =
+          Theme.of(context).brightness == Brightness.dark;
+
+      return Scaffold(
+        appBar: AppBar(title: const Text('Paramètres')),
+        body: ListView(
+          children: [
+            const SizedBox(height: 20),
+            ListTile(
+              contentPadding: const EdgeInsets.only(left: 30.0, right: 30.0),
+              leading: const Icon(Icons.dark_mode),
+              title: const Text("Mode Sombre"),
+              trailing: Switch(
+                // Valeur du switch quand on rentre dans la page
+                value: isCurrentlyDark,
+                //Quand le swith passe à ON il envoit true
+                onChanged: (val) {
+                  toggleTheme(val);
+                  // On relance le build pour afficher les modifs, donc pas de fonction à mettre
+                  setState(() {});
+                },
+              ),
             ),
-          ),
-        ],
-      ),
-    );
+          ],
+        ),
+      );
+    }
   }
-}
