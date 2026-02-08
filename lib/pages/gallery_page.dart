@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
-import '../widgets/custom_header.dart';
 
 class GalleryPage extends StatefulWidget {
   const GalleryPage({super.key});
@@ -10,7 +9,11 @@ class GalleryPage extends StatefulWidget {
   State<GalleryPage> createState() => _GalleryPageState();
 }
 
-class _GalleryPageState extends State<GalleryPage> {
+class _GalleryPageState extends State<GalleryPage>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   //La liste qui va contenir toutes les images
   List<AssetEntity> _images = [];
   //Booléen pour savoir si ça charge pour afficher un écran de chargement
@@ -55,6 +58,7 @@ class _GalleryPageState extends State<GalleryPage> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Column(
       children: [
         Expanded(

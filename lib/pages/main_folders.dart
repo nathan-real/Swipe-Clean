@@ -8,9 +8,14 @@ class MainFolders extends StatefulWidget {
   State<MainFolders> createState() => _MainFoldersState();
 }
 
-class _MainFoldersState extends State<MainFolders> {
+class _MainFoldersState extends State<MainFolders>
+    with AutomaticKeepAliveClientMixin {
+  @override
+  bool get wantKeepAlive => true;
+
   @override
   Widget build(BuildContext context) {
+    super.build(context);
     return Column(
       children: [
         const SizedBox(height: 20),
