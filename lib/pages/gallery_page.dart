@@ -57,10 +57,6 @@ class _GalleryPageState extends State<GalleryPage> {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        const SizedBox(height: 20),
-        const CustomHeader(),
-        const SizedBox(height: 10),
-
         Expanded(
           child: _isLoading
               ? const Center(child: CircularProgressIndicator())
