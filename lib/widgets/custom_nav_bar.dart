@@ -13,8 +13,9 @@ class CustomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    const double navBarWidth = 280.0;
-    const double stroke = 8;
+    const double navBarWidth = 330.0;
+    const double stroke = 5;
+    const double pillHeight = 65;
 
     return Positioned(
       bottom: 30, // détaché du bas
@@ -23,7 +24,7 @@ class CustomNavBar extends StatelessWidget {
       child: Center(
         child: Container(
           width: navBarWidth,
-          height: 65,
+          height: pillHeight,
           decoration: BoxDecoration(
             color: Colors.white,
             borderRadius: BorderRadius.circular(35),
@@ -42,17 +43,17 @@ class CustomNavBar extends StatelessWidget {
               AnimatedPositioned(
                 duration: const Duration(milliseconds: 250),
                 curve: Curves.easeOut,
-                left: currentIndex == 0 ? stroke : navBarWidth / 2 + stroke,
+                left: (navBarWidth / 3) * currentIndex + stroke,
 
                 top: 0,
                 bottom: 0,
-                width: navBarWidth / 2 - stroke * 2,
+                width: navBarWidth / 3 - stroke * 2,
 
                 child: Center(
                   // Pillule
                   child: Container(
-                    width: navBarWidth / 2 - stroke * 2,
-                    height: 50,
+                    width: navBarWidth / 3 - stroke * 2,
+                    height: pillHeight - stroke * 2,
                     decoration: BoxDecoration(
                       color: AppColors.main,
                       borderRadius: BorderRadius.circular(35),
@@ -72,9 +73,15 @@ class CustomNavBar extends StatelessWidget {
                   ),
                   _buildNavItem(
                     1,
-                    Icons.photo_library_outlined,
-                    Icons.photo_library,
-                    "Galerie",
+                    Icons.delete_outlined,
+                    Icons.delete,
+                    "Corbeille",
+                  ),
+                  _buildNavItem(
+                    2,
+                    Icons.settings_outlined,
+                    Icons.settings,
+                    "Paramètres",
                   ),
                 ],
               ),

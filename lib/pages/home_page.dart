@@ -8,6 +8,7 @@ import '../widgets/custom_nav_bar.dart';
 // Pages
 import 'gallery_page.dart';
 import 'main_folders.dart';
+import 'settings_page.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
@@ -27,6 +28,7 @@ class _HomePageState extends State<HomePage> {
   final List<Widget> _pages = [
     const MainFolders(), // Page 0
     const GalleryPage(), // Page 1
+    const SettingsPage(), // Page 2
   ];
 
   @override
@@ -73,8 +75,6 @@ class _HomePageState extends State<HomePage> {
           // On met PageView en premier pour qu'il soit au fond
           PageView(
             controller: _pageController,
-            physics:
-                const NeverScrollableScrollPhysics(), // ATTENTION A SUPPRIMER POUR SCROLLER DANS LE PAGE VIEW
             onPageChanged: (index) {
               setState(() => _currentIndex = index);
             },
