@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import '../pages/settings_page.dart';
 
 class CustomHeader extends StatelessWidget {
   const CustomHeader({super.key});

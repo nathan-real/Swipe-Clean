@@ -22,8 +22,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
       body: SafeArea(
         child: Column(
           children: [
-            SizedBox(
-              height: 680,
+            Expanded(
               child: CardSwiper(
                 cardsCount: _cards.length,
                 allowedSwipeDirection: const AllowedSwipeDirection.all(),
@@ -57,6 +56,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
                 },
               ),
             ),
+            SizedBox(height: 170),
           ],
         ),
       ),
