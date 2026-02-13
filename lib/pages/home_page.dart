@@ -73,6 +73,8 @@ class _HomePageState extends State<HomePage> {
           // On met PageView en premier pour qu'il soit au fond
           PageView(
             controller: _pageController,
+            physics:
+                const NeverScrollableScrollPhysics(), // ATTENTION A SUPPRIMER POUR SCROLLER DANS LE PAGE VIEW
             onPageChanged: (index) {
               setState(() => _currentIndex = index);
             },

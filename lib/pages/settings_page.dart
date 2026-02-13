@@ -43,9 +43,7 @@ class _SettingsPageState extends State<SettingsPage> {
               activeColor: Colors.white,
               activeTrackColor: AppColors.main,
               inactiveThumbColor: Colors.grey,
-              inactiveTrackColor: Colors.grey.withOpacity(
-                0.3,
-              ), // Le fond est gris clair
+              inactiveTrackColor: Colors.grey.withOpacity(0.3),
             ),
           ),
         ],
