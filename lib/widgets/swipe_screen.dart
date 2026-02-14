@@ -1,5 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
+import '../app_colors.dart';
+import 'package:photo_manager/photo_manager.dart';
+import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
+import '../services/gallery_service.dart';
 
 class SwipeScreen extends StatefulWidget {
   const SwipeScreen({super.key});
@@ -9,22 +13,50 @@ class SwipeScreen extends StatefulWidget {
 }
 
 class _SwipeScreenState extends State<SwipeScreen> {
-  final List<Color> _cards = [
-    Colors.red,
-    Colors.blue,
-    Colors.green,
-    Colors.orange,
-  ];
+  // On instancie notre service de photo
+  final GalleryService _galleryService = GalleryService();
+
+  List<AssetEntity> _images = [];
+  bool _isLoading = true;
+
+  @override
+  // On load les photos à l'initialisation
+  void initState() {
+    super.initState();
+    _loadPhotos();
+  }
+
+  Future<void> _loadPhotos() async {
+    // On appelle notre service.
+    // On donnera le mois et l'année plus tard ici
+    final photos = await _galleryService.getImages(limit: 100);
+
+    setState(() {
+      _images = photos;
+      _isLoading = false;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
+    if (_isLoading) {
+      return const Center(child: CircularProgressIndicator());
+    }
+
+    if (_images.isEmpty) {
+      return const Center(
+        child: Text("Aucune photo trouvée ou permission refusée"),
+      );
+    }
+
     return Scaffold(
       body: SafeArea(
         child: Column(
           children: [
             Expanded(
               child: CardSwiper(
-                cardsCount: _cards.length,
+                cardsCount: _images.length,
+                numberOfCardsDisplayed: 3,
                 allowedSwipeDirection: const AllowedSwipeDirection.all(),
 
                 onSwipe: (previousIndex, currentIndex, direction) {
@@ -47,11 +79,37 @@ class _SwipeScreenState extends State<SwipeScreen> {
                 },
                 cardBuilder: (context, index, x, y) {
                   return Container(
+                    // Boite qui fai l'ombre
                     decoration: BoxDecoration(
-                      color: _cards[index],
                       borderRadius: BorderRadius.circular(20),
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.4),
+                          blurRadius: 15,
+                          offset: const Offset(0, 10),
+                          spreadRadius: 1,
+                        ),
+                      ],
                     ),
-                    alignment: Alignment.center,
+
+                    // Carte en elle même
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: Stack(
+                        fit: StackFit.expand,
+                        children: [
+                          Container(color: AppColors.main),
+
+                          AssetEntityImage(
+                            _images[index],
+                            isOriginal: false,
+                            thumbnailSize: const ThumbnailSize.square(1024),
+
+                            fit: BoxFit.contain,
+                          ),
+                        ],
+                      ),
+                    ),
                   );
                 },
               ),

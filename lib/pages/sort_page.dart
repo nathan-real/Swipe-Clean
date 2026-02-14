@@ -18,12 +18,7 @@ class _SortPageState extends State<SortPage>
     super.build(context);
     return Scaffold(
       appBar: AppBar(title: const Text('Trie de Janvier')),
-      body: Column(
-        children: [
-          const SizedBox(height: 20),
-          const Expanded(child: SwipeScreen()),
-        ],
-      ),
+      body: Column(children: [const Expanded(child: SwipeScreen())]),
     );
   }
 }
