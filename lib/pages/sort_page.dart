@@ -17,7 +17,7 @@ class _SortPageState extends State<SortPage>
   Widget build(BuildContext context) {
     super.build(context);
     return Scaffold(
-      appBar: AppBar(title: const Text('Trie de Janvier')),
+      appBar: AppBar(title: const Text('Tri de Janvier')),
       body: Column(children: [const Expanded(child: SwipeScreen())]),
     );
   }
