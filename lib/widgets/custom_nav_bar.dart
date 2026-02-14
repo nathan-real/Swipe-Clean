@@ -13,6 +13,7 @@ class CustomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final isDarkMode = Theme.of(context).brightness == Brightness.dark;
     const double navBarWidth = 330.0;
     const double stroke = 5;
     const double pillHeight = 65;
@@ -26,12 +27,12 @@ class CustomNavBar extends StatelessWidget {
           width: navBarWidth,
           height: pillHeight,
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: isDarkMode ? AppColors.backgroundDark2 : Colors.white,
             borderRadius: BorderRadius.circular(35),
             boxShadow: [
               BoxShadow(
                 color: Colors.black.withOpacity(
-                  0.25,
+                  isDarkMode ? 0.5 : 0.25,
                 ), // Ombre  A AJOUTER DANS COLORS
                 blurRadius: 20,
                 offset: const Offset(0, 5),
@@ -105,28 +106,54 @@ class CustomNavBar extends StatelessWidget {
       child: GestureDetector(
         onTap: () => onTap(index),
         behavior: HitTestBehavior.opaque,
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            AnimatedScale(
-              scale: isSelected ? 1.0 : 0.9,
-              duration: const Duration(milliseconds: 200),
-              child: Icon(
-                isSelected ? iconOn : iconOff,
-                color: isSelected ? Colors.white : Colors.grey,
-                size: 26,
-              ),
-            ),
-            const SizedBox(height: 2),
-            Text(
-              label,
-              style: TextStyle(
-                color: isSelected ? Colors.white : Colors.grey,
-                fontWeight: FontWeight.w600,
-                fontSize: 12,
-              ),
-            ),
-          ],
+
+        child: TweenAnimationBuilder<Color?>(
+          duration: const Duration(
+            milliseconds: 250,
+          ), // Toujours synchro avec la pilule
+          // C'EST ICI QUE TOUT SE JOUE 👇
+          curve: isSelected
+              ? const Interval(
+                  0.6,
+                  1.0,
+                  curve: Curves.easeOut,
+                ) // Arrivée : On attend 60% du trajet avant de blanchir
+              : const Interval(
+                  0.0,
+                  0.1,
+                  curve: Curves.linear,
+                ), // Départ : On redevient gris tout de suite (dès le début)
+
+          tween: ColorTween(
+            begin: Colors.grey,
+            end: isSelected ? Colors.white : Colors.grey,
+          ),
+
+          builder: (context, color, child) {
+            return Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                AnimatedScale(
+                  scale: isSelected ? 1.0 : 0.9,
+                  duration: const Duration(milliseconds: 200),
+                  child: Icon(
+                    isSelected ? iconOn : iconOff,
+                    color: color,
+                    size: 26,
+                  ),
+                ),
+                const SizedBox(height: 2),
+                Text(
+                  label,
+                  style: TextStyle(
+                    color: color,
+                    fontWeight: FontWeight.w600,
+                    fontSize: 12,
+                  ),
+                ),
+              ],
+            );
+          },
         ),
       ),
     );

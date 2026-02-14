@@ -47,14 +47,23 @@ class _HomePageState extends State<HomePage> {
 
   // Fonction pour changer de page quand on clique en bas dans la navigation bar
   void _onItemTapped(int index) {
+    final isNeighbor = (index - _currentIndex).abs() == 1;
+
     setState(() {
       _currentIndex = index;
     });
-    _pageController.animateToPage(
-      index,
-      duration: const Duration(milliseconds: 300), // Vitesse de l'animation
-      curve: Curves.easeOut, // Type de mouvement fluide
-    );
+
+    if (isNeighbor) {
+      // Si c'est juste à côté on fait l'animation fluide
+      _pageController.animateToPage(
+        index,
+        duration: const Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    } else {
+      // Si c'est loin, on téléporte pour éviter le bug de la page du milieu
+      _pageController.jumpToPage(index);
+    }
   }
 
   @override

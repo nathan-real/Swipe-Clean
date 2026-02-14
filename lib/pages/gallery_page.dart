@@ -28,11 +28,19 @@ class _GalleryPageState extends State<GalleryPage>
   Future<void> _fetchAssets() async {
     // Variable qui stock la permission acceptée ou refusée
     final PermissionState ps = await PhotoManager.requestPermissionExtend();
+
+    final FilterOptionGroup filterOption = FilterOptionGroup(
+      orders: [
+        // On veut les plus récentes en premier
+        const OrderOption(type: OrderOptionType.createDate, asc: false),
+      ],
+    );
     if (ps.isAuth || ps == PermissionState.limited) {
       // On demande ques les images, pas de vidéos
       // Le type est une liste des chemins vers ces photos et pas les photos elles mêmes
       List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
         type: RequestType.image,
+        filterOption: filterOption,
       );
       if (albums.isNotEmpty) {
         // On prend le premier album
