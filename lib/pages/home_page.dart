@@ -91,6 +91,7 @@ class _HomePageState extends State<HomePage> {
           ),
 
           // COUCHE 2 : La nav bar
+          // On lui passe la foncitionn pour passer d'une page à l'autre
           CustomNavBar(currentIndex: _currentIndex, onTap: _onItemTapped),
         ],
       ),

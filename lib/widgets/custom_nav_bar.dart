@@ -107,53 +107,28 @@ class CustomNavBar extends StatelessWidget {
         onTap: () => onTap(index),
         behavior: HitTestBehavior.opaque,
 
-        child: TweenAnimationBuilder<Color?>(
-          duration: const Duration(
-            milliseconds: 250,
-          ), // Toujours synchro avec la pilule
-          // C'EST ICI QUE TOUT SE JOUE 👇
-          curve: isSelected
-              ? const Interval(
-                  0.6,
-                  1.0,
-                  curve: Curves.easeOut,
-                ) // Arrivée : On attend 60% du trajet avant de blanchir
-              : const Interval(
-                  0.0,
-                  0.1,
-                  curve: Curves.linear,
-                ), // Départ : On redevient gris tout de suite (dès le début)
-
-          tween: ColorTween(
-            begin: Colors.grey,
-            end: isSelected ? Colors.white : Colors.grey,
-          ),
-
-          builder: (context, color, child) {
-            return Column(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                AnimatedScale(
-                  scale: isSelected ? 1.0 : 0.9,
-                  duration: const Duration(milliseconds: 200),
-                  child: Icon(
-                    isSelected ? iconOn : iconOff,
-                    color: color,
-                    size: 26,
-                  ),
-                ),
-                const SizedBox(height: 2),
-                Text(
-                  label,
-                  style: TextStyle(
-                    color: color,
-                    fontWeight: FontWeight.w600,
-                    fontSize: 12,
-                  ),
-                ),
-              ],
-            );
-          },
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            AnimatedScale(
+              scale: isSelected ? 1.0 : 0.9,
+              duration: const Duration(milliseconds: 200),
+              child: Icon(
+                isSelected ? iconOn : iconOff,
+                color: isSelected ? Colors.white : Colors.grey,
+                size: 26,
+              ),
+            ),
+            const SizedBox(height: 2),
+            Text(
+              label,
+              style: TextStyle(
+                color: isSelected ? Colors.white : Colors.grey,
+                fontWeight: FontWeight.w600,
+                fontSize: 12,
+              ),
+            ),
+          ],
         ),
       ),
     );
