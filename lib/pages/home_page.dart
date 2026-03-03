@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:swipe_clean/app_colors.dart';
 import 'package:photo_manager/photo_manager.dart';
+import '../services/storage_service.dart';
 
 // Widgets
 import '../widgets/custom_nav_bar.dart';
@@ -33,6 +34,28 @@ class _HomePageState extends State<HomePage> {
     super.initState();
     // On initialise le contrôleur sur la page 0 au démarrage
     _pageController = PageController(initialPage: 0);
+
+    _loadSavedData();
+  }
+
+  // Fonction pour load les données eregistrées sur l'appareil
+  Future<void> _loadSavedData() async {
+    // On les récupère dans un liste de string toute simple grâce au service de storage
+    List<String> savedIds = await StorageService().getTrashList();
+
+    // On créer une liste vide de type AssetEntity.
+    List<AssetEntity> recoveredPhotos = [];
+
+    // Pour chaque id dans la liste de string simple on vient le convertir et l'ajouter dans la liste du bon type
+    for (String id in savedIds) {
+      final asset = await AssetEntity.fromId(id);
+      if (asset != null) {
+        recoveredPhotos.add(asset);
+      }
+    }
+    setState(() {
+      photosToDelete = recoveredPhotos;
+    });
   }
 
   @override
@@ -64,10 +87,15 @@ class _HomePageState extends State<HomePage> {
   }
 
   // Fonction pour ajouter des photos à la corbeille
-  void _addToTrash(AssetEntity photo) {
+  void _addToTrash(AssetEntity photo) async {
     setState(() {
       photosToDelete.add(photo);
     });
+
+    // On créer un liste "ids" qui récupère les ids des photos à suppprimer
+    List<String> ids = photosToDelete.map((p) => p.id).toList();
+    // On appelle la fonction pour enregistrer les ids
+    await StorageService().saveTrashList(ids);
   }
 
   @override
