@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
+import 'package:photo_manager/photo_manager.dart';
 import '../widgets/custom_header.dart';
 import 'sort_page.dart';
 import 'package:swipe_clean/app_colors.dart';
 
 class MainFolders extends StatefulWidget {
-  const MainFolders({super.key});
+  final Function(AssetEntity) onTrashPhoto;
+
+  const MainFolders({super.key, required this.onTrashPhoto});
 
   @override
   State<MainFolders> createState() => _MainFoldersState();
@@ -38,8 +41,9 @@ class _MainFoldersState extends State<MainFolders>
                   Navigator.of(context).push(
                     // PageRouteBuilder pour modifier l'animation
                     PageRouteBuilder(
+                      // Quand on appuie sur le bouton on va afficher la page de trie et on passe la fonction de corbeille
                       pageBuilder: (context, animation, secondaryAnimation) =>
-                          const SortPage(),
+                          SortPage(onTrashPhoto: widget.onTrashPhoto),
 
                       transitionsBuilder:
                           (context, animation, secondaryAnimation, child) {

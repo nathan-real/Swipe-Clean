@@ -1,12 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:swipe_clean/app_colors.dart';
+import 'package:photo_manager/photo_manager.dart';
 
 // Widgets
 import '../widgets/custom_nav_bar.dart';
 
 // Pages
-import 'gallery_page.dart';
+import 'trash_page.dart';
 import 'main_folders.dart';
 import 'settings_page.dart';
 
@@ -21,15 +22,11 @@ class _HomePageState extends State<HomePage> {
   // Index de la page qu'on veut afficher
   int _currentIndex = 0;
 
-  // La liste des pages qu'on va charger au début
+  // La liste des photos qu'on va afficher dans la corbeille.
+  List<AssetEntity> photosToDelete = [];
+
   // Late car c'est une promesse
   late PageController _pageController;
-
-  final List<Widget> _pages = [
-    const MainFolders(), // Page 0
-    const GalleryPage(), // Page 1
-    const SettingsPage(), // Page 2
-  ];
 
   @override
   void initState() {
@@ -66,6 +63,13 @@ class _HomePageState extends State<HomePage> {
     }
   }
 
+  // Fonction pour ajouter des photos à la corbeille
+  void _addToTrash(AssetEntity photo) {
+    setState(() {
+      photosToDelete.add(photo);
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -87,7 +91,15 @@ class _HomePageState extends State<HomePage> {
             onPageChanged: (index) {
               setState(() => _currentIndex = index);
             },
-            children: _pages,
+            children: [
+              // On passe la fonction à MainFolders (qui la passera à SwipeScreen)
+              MainFolders(onTrashPhoto: _addToTrash),
+
+              // On passe la liste des photos à la corbeille
+              TrashPage(trashedPhotos: photosToDelete),
+
+              const SettingsPage(),
+            ],
           ),
 
           // COUCHE 2 : La nav bar

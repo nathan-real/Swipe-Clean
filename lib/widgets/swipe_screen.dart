@@ -6,7 +6,9 @@ import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import '../services/gallery_service.dart';
 
 class SwipeScreen extends StatefulWidget {
-  const SwipeScreen({super.key});
+  final Function(AssetEntity) onTrashPhoto;
+
+  const SwipeScreen({super.key, required this.onTrashPhoto});
 
   @override
   State<SwipeScreen> createState() => _SwipeScreenState();
@@ -72,6 +74,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
                   }
                   // CAS 3 : L'utilisateur swipe à gauche
                   else if (direction == CardSwiperDirection.left) {
+                    widget.onTrashPhoto(_images[previousIndex]);
                     return true;
                   }
 
