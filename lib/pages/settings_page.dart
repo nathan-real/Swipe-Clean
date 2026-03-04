@@ -40,10 +40,10 @@ class _SettingsPageState extends State<SettingsPage> {
                 // On relance le build pour afficher les modifs, donc pas de fonction à mettre
                 setState(() {});
               },
-              activeColor: Colors.white,
+              activeThumbColor: Colors.white,
               activeTrackColor: AppColors.main,
               inactiveThumbColor: Colors.grey,
-              inactiveTrackColor: Colors.grey.withOpacity(0.3),
+              inactiveTrackColor: Colors.grey.withValues(alpha: 0.3),
             ),
           ),
         ],

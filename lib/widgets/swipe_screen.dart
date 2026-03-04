@@ -81,13 +81,26 @@ class _SwipeScreenState extends State<SwipeScreen> {
                   return false;
                 },
                 cardBuilder: (context, index, x, y) {
+                  final double dragPourcentage =
+                      x / (MediaQuery.of(context).size.width);
+                  // On utilise un clamp à 1.0 au max pour éviter les erreurs
+                  final double opacity = dragPourcentage.abs().clamp(0.0, 0.6);
+
+                  Color overlayColor = const Color.fromARGB(0, 255, 255, 255);
+
+                  if (dragPourcentage > 0) {
+                    overlayColor = Colors.green;
+                  } else if (dragPourcentage < 0) {
+                    overlayColor = Colors.red;
+                  }
+
                   return Container(
-                    // Boite qui fai l'ombre
+                    // Boite qui fait l'ombre
                     decoration: BoxDecoration(
                       borderRadius: BorderRadius.circular(20),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.4),
+                          color: Colors.black.withValues(alpha: 0.4),
                           blurRadius: 15,
                           offset: const Offset(0, 10),
                           spreadRadius: 1,
@@ -103,12 +116,18 @@ class _SwipeScreenState extends State<SwipeScreen> {
                         children: [
                           Container(color: AppColors.main),
 
+                          // La photo
                           AssetEntityImage(
                             _images[index],
                             isOriginal: false,
                             thumbnailSize: const ThumbnailSize.square(1024),
 
                             fit: BoxFit.contain,
+                          ),
+
+                          Container(
+                            // Calque pour afficher de la couleur au desssus
+                            color: overlayColor.withValues(alpha: opacity),
                           ),
                         ],
                       ),

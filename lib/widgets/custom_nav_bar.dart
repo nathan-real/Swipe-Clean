@@ -31,7 +31,7 @@ class CustomNavBar extends StatelessWidget {
             borderRadius: BorderRadius.circular(35),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(
+                color: Colors.black.withValues(alpha: 
                   isDarkMode ? 0.5 : 0.25,
                 ), // Ombre  A AJOUTER DANS COLORS
                 blurRadius: 20,
