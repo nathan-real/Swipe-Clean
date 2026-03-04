@@ -15,6 +15,8 @@ class SwipeScreen extends StatefulWidget {
 }
 
 class _SwipeScreenState extends State<SwipeScreen> {
+  final CardSwiperController controller = CardSwiperController();
+
   // On instancie notre service de photo
   final GalleryService _galleryService = GalleryService();
 
@@ -26,6 +28,12 @@ class _SwipeScreenState extends State<SwipeScreen> {
   void initState() {
     super.initState();
     _loadPhotos();
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
   }
 
   Future<void> _loadPhotos() async {
@@ -57,6 +65,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
           children: [
             Expanded(
               child: CardSwiper(
+                controller: controller,
                 cardsCount: _images.length,
                 numberOfCardsDisplayed: 3,
                 allowedSwipeDirection: const AllowedSwipeDirection.all(),
@@ -136,7 +145,27 @@ class _SwipeScreenState extends State<SwipeScreen> {
                 },
               ),
             ),
-            SizedBox(height: 170),
+            Padding(
+              padding: const EdgeInsets.all(16.0),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                children: [
+                  FloatingActionButton(
+                    onPressed: () => controller.swipe(CardSwiperDirection.left),
+                    backgroundColor: Colors.red,
+                    child: const Icon(Icons.close_rounded, color: Colors.white),
+                  ),
+                  FloatingActionButton(
+                    onPressed: () =>
+                        controller.swipe(CardSwiperDirection.right),
+                    backgroundColor: Colors.green,
+                    child: const Icon(Icons.check_rounded, color: Colors.white),
+                  ),
+                ], // Fin des children du Row
+              ), // Fin du Row
+            ), // Fin du Padding
+
+            SizedBox(height: 130),
           ],
         ),
       ),
