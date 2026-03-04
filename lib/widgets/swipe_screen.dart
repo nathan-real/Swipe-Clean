@@ -67,7 +67,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
               child: CardSwiper(
                 controller: controller,
                 cardsCount: _images.length,
-                numberOfCardsDisplayed: 3,
+                numberOfCardsDisplayed: 2,
                 allowedSwipeDirection: const AllowedSwipeDirection.all(),
 
                 onSwipe: (previousIndex, currentIndex, direction) {
@@ -151,14 +151,18 @@ class _SwipeScreenState extends State<SwipeScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
                   FloatingActionButton(
+                    heroTag: "btn_trash",
                     onPressed: () => controller.swipe(CardSwiperDirection.left),
                     backgroundColor: Colors.red,
+                    shape: CircleBorder(),
                     child: const Icon(Icons.close_rounded, color: Colors.white),
                   ),
                   FloatingActionButton(
+                    heroTag: "btn_keep",
                     onPressed: () =>
                         controller.swipe(CardSwiperDirection.right),
                     backgroundColor: Colors.green,
+                    shape: CircleBorder(),
                     child: const Icon(Icons.check_rounded, color: Colors.white),
                   ),
                 ], // Fin des children du Row
