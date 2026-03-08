@@ -3,10 +3,15 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 
 class TrashPage extends StatefulWidget {
-  // La page reçoit la liste de l'extérieur
+  // La page reçoit la liste de l'extérieur + la fonction de suppression
   final List<AssetEntity> trashedPhotos;
+  final VoidCallback onEmptyTrash;
 
-  const TrashPage({super.key, required this.trashedPhotos});
+  const TrashPage({
+    super.key,
+    required this.trashedPhotos,
+    required this.onEmptyTrash,
+  });
 
   @override
   State<TrashPage> createState() => _TrashPageState();
@@ -15,6 +20,38 @@ class TrashPage extends StatefulWidget {
 class _TrashPageState extends State<TrashPage>
     with AutomaticKeepAliveClientMixin {
   // Permet de garder la position du scroll quand on change d'onglet
+
+  // Fonction qui permet d'envoyer la notif system de supression définitive des photos
+  void _showDeleteConfirmation() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text("Vider la corbeille ?"),
+          content: const Text(
+            "Ces photos seront définitivement supprimées de votre appareil. Cette action est irréversible.",
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(), // Annuler
+              child: const Text("Annuler"),
+            ),
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Ferme la pop-up
+                widget.onEmptyTrash();
+              },
+              child: const Text(
+                "Supprimer",
+                style: TextStyle(color: Colors.red),
+              ),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   bool get wantKeepAlive => true;
 
@@ -63,6 +100,23 @@ class _TrashPageState extends State<TrashPage>
                   },
                 ),
         ),
+        if (widget.trashedPhotos.isNotEmpty)
+          Padding(
+            // On ajoute une marge en bas pour éviter que la NavBar ne le cache
+            padding: const EdgeInsets.only(top: 15.0, bottom: 120.0),
+            child: FloatingActionButton.extended(
+              onPressed: _showDeleteConfirmation,
+              backgroundColor: Colors.red,
+              icon: const Icon(Icons.delete_forever, color: Colors.white),
+              label: const Text(
+                "Tout supprimer",
+                style: TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ),
       ],
     );
   }

@@ -98,6 +98,31 @@ class _HomePageState extends State<HomePage> {
     await StorageService().saveTrashList(ids);
   }
 
+  // Fonction pour vider la corbeille
+  Future<void> _emptyTrashPermanently() async {
+    if (photosToDelete.isEmpty) return;
+    // On récupère les ids des photos à supprimer
+    List<String> idsToDelete = photosToDelete.map((p) => p.id).toList();
+
+    // On demande au système de les supprimer en récupérant les ids des photos supprimer
+    final List<String> successfullyDeletedIds = await PhotoManager.editor
+        .deleteWithIds(idsToDelete);
+
+    // Si des photos ont bien été supprimées
+    if (successfullyDeletedIds.isNotEmpty) {
+      setState(() {
+        // On retire de notre liste les photos qui ont vraiment été supprimées
+        photosToDelete.removeWhere(
+          (photo) => successfullyDeletedIds.contains(photo.id),
+        );
+      });
+
+      // On met à jour la sauvegarde locale
+      List<String> remainingIds = photosToDelete.map((p) => p.id).toList();
+      await StorageService().saveTrashList(remainingIds);
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -124,7 +149,9 @@ class _HomePageState extends State<HomePage> {
               MainFolders(onTrashPhoto: _addToTrash),
 
               // On passe la liste des photos à la corbeille
-              TrashPage(trashedPhotos: photosToDelete),
+              TrashPage(trashedPhotos: photosToDelete,
+                onEmptyTrash: _emptyTrashPermanently,
+              ),
 
               const SettingsPage(),
             ],
