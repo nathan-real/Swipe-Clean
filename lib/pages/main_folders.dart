@@ -6,8 +6,13 @@ import 'package:swipe_clean/app_colors.dart';
 
 class MainFolders extends StatefulWidget {
   final Function(AssetEntity) onTrashPhoto;
+  final Function(AssetEntity) onRemoveFromTrash;
 
-  const MainFolders({super.key, required this.onTrashPhoto});
+  const MainFolders({
+    super.key,
+    required this.onTrashPhoto,
+    required this.onRemoveFromTrash,
+  });
 
   @override
   State<MainFolders> createState() => _MainFoldersState();
@@ -43,7 +48,10 @@ class _MainFoldersState extends State<MainFolders>
                     PageRouteBuilder(
                       // Quand on appuie sur le bouton on va afficher la page de trie et on passe la fonction de corbeille
                       pageBuilder: (context, animation, secondaryAnimation) =>
-                          SortPage(onTrashPhoto: widget.onTrashPhoto),
+                          SortPage(
+                            onTrashPhoto: widget.onTrashPhoto,
+                            onRemoveFromTrash: widget.onRemoveFromTrash,
+                          ),
 
                       transitionsBuilder:
                           (context, animation, secondaryAnimation, child) {

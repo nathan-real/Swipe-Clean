@@ -98,6 +98,18 @@ class _HomePageState extends State<HomePage> {
     await StorageService().saveTrashList(ids);
   }
 
+  // Fonction pour retirer une photo de la corbeille
+  Future<void> _removeFromTrash(AssetEntity photo) async {
+    setState(() {
+      // On enlève la photo de notre liste corbeille en comparant les IDs
+      photosToDelete.removeWhere((p) => p.id == photo.id);
+    });
+
+    // On met à jour la sauvegarde locale pour qu'elle corresponde
+    List<String> remainingIds = photosToDelete.map((p) => p.id).toList();
+    await StorageService().saveTrashList(remainingIds);
+  }
+
   // Fonction pour vider la corbeille
   Future<void> _emptyTrashPermanently() async {
     if (photosToDelete.isEmpty) return;
@@ -146,11 +158,16 @@ class _HomePageState extends State<HomePage> {
             },
             children: [
               // On passe la fonction à MainFolders (qui la passera à SwipeScreen)
-              MainFolders(onTrashPhoto: _addToTrash),
+              MainFolders(
+                onTrashPhoto: _addToTrash,
+                onRemoveFromTrash: _removeFromTrash,
+              ),
 
               // On passe la liste des photos à la corbeille
-              TrashPage(trashedPhotos: photosToDelete,
+              TrashPage(
+                trashedPhotos: photosToDelete,
                 onEmptyTrash: _emptyTrashPermanently,
+                onRemoveFromTrash: _removeFromTrash,
               ),
 
               const SettingsPage(),

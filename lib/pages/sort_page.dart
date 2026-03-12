@@ -4,8 +4,13 @@ import '../widgets/swipe_screen.dart';
 
 class SortPage extends StatefulWidget {
   final Function(AssetEntity) onTrashPhoto;
+  final Function(AssetEntity) onRemoveFromTrash;
 
-  const SortPage({super.key, required this.onTrashPhoto});
+  const SortPage({
+    super.key,
+    required this.onTrashPhoto,
+    required this.onRemoveFromTrash,
+  });
   @override
   State<SortPage> createState() => _SortPageState();
 }
@@ -23,7 +28,7 @@ class _SortPageState extends State<SortPage>
       body: Column(
         children: [
           // On passe la fonction à notre widget de swipe
-          Expanded(child: SwipeScreen(onTrashPhoto: widget.onTrashPhoto)),
+          Expanded(child: SwipeScreen(onTrashPhoto: widget.onTrashPhoto, onRemoveFromTrash: widget.onRemoveFromTrash)),
         ],
       ),
     );

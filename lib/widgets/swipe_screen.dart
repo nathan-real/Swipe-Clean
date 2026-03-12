@@ -8,8 +8,13 @@ import '../services/gallery_service.dart';
 
 class SwipeScreen extends StatefulWidget {
   final Function(AssetEntity) onTrashPhoto;
+  final Function(AssetEntity) onRemoveFromTrash;
 
-  const SwipeScreen({super.key, required this.onTrashPhoto});
+  const SwipeScreen({
+    super.key,
+    required this.onTrashPhoto,
+    required this.onRemoveFromTrash,
+  });
 
   @override
   State<SwipeScreen> createState() => _SwipeScreenState();
@@ -95,6 +100,20 @@ class _SwipeScreenState extends State<SwipeScreen> {
 
                   return false;
                 },
+
+                onUndo:
+                    (
+                      int? previousIndex,
+                      int currentIndex,
+                      CardSwiperDirection direction,
+                    ) {
+                      // Si la carte précédente avait été glissée à gauche (vers la corbeille)
+                      if (direction == CardSwiperDirection.left) {
+                        // On la retire de la liste de la corbeille
+                        widget.onRemoveFromTrash(_images[currentIndex]);
+                      }
+                      return true; // On autorise l'animation de retour
+                    },
                 cardBuilder: (context, index, x, y) {
                   final double dragPourcentage =
                       x / (MediaQuery.of(context).size.width);
@@ -164,6 +183,13 @@ class _SwipeScreenState extends State<SwipeScreen> {
                     child: const Icon(Icons.close_rounded, color: Colors.white),
                   ),
                   FloatingActionButton(
+                    heroTag: "btn_undo",
+                    onPressed: controller.undo,
+                    backgroundColor: Colors.grey,
+                    shape: CircleBorder(),
+                    child: const Icon(Icons.undo, color: Colors.white),
+                  ),
+                  FloatingActionButton(
                     heroTag: "btn_keep",
                     onPressed: () =>
                         controller.swipe(CardSwiperDirection.right),
@@ -171,9 +197,9 @@ class _SwipeScreenState extends State<SwipeScreen> {
                     shape: CircleBorder(),
                     child: const Icon(Icons.check_rounded, color: Colors.white),
                   ),
-                ], // Fin des children du Row
-              ), // Fin du Row
-            ), // Fin du Padding
+                ],
+              ),
+            ),
 
             SizedBox(height: 130),
           ],
