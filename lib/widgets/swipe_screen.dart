@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
+import 'package:swipe_clean/services/storage_service.dart';
 import '../app_colors.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
@@ -40,9 +41,14 @@ class _SwipeScreenState extends State<SwipeScreen> {
     // On appelle notre service.
     // On donnera le mois et l'année plus tard ici
     final photos = await _galleryService.getImages(limit: 100);
+    final trashedIds = await StorageService().getTrashList();
+    // On filtre en cherchant si parmis tous les ids des photos on supprimes celles qui sont aussi dans la corbeille
+    final filteredPhotos = photos.where((photo) {
+      return !trashedIds.contains(photo.id);
+    }).toList();
 
     setState(() {
-      _images = photos;
+      _images = filteredPhotos;
       _isLoading = false;
     });
   }
