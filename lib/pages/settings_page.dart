@@ -23,7 +23,15 @@ class _SettingsPageState extends State<SettingsPage> {
         Theme.of(context).brightness == Brightness.dark;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Paramètres')),
+      appBar: AppBar(
+        title: Text(
+          'Paramètres',
+          style: TextStyle(color: AppColors.text(context)),
+        ),
+        backgroundColor: const Color.fromARGB(0, 255, 255, 255),
+        iconTheme: IconThemeData(color: AppColors.text(context)),
+        elevation: 0,
+      ),
       body: ListView(
         children: [
           const SizedBox(height: 20),

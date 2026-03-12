@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import 'package:swipe_clean/app_colors.dart';
 import 'package:photo_manager/photo_manager.dart';
 import '../services/storage_service.dart';
 
@@ -137,15 +136,16 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    final bool isDarkMode = Theme.of(context).brightness == Brightness.dark;
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: AppColors.main,
-        toolbarHeight: 0, // Hauteur 0 : pour juste avoir la statue bar
-        elevation: 0, // Pas d'ombre
-        systemOverlayStyle: SystemUiOverlayStyle
-            .light, // Pour mettre les icones de la barre en blanc
+        backgroundColor: const Color.fromARGB(0, 255, 255, 255),
+        toolbarHeight: 0,
+        elevation: 0,
+        systemOverlayStyle: isDarkMode
+            ? SystemUiOverlayStyle.light
+            : SystemUiOverlayStyle.dark, // Met les icônes en noir
       ),
-
       body: Stack(
         // Stack pour empiler des éléments
         children: [

@@ -27,12 +27,14 @@ class CustomNavBar extends StatelessWidget {
           width: navBarWidth,
           height: pillHeight,
           decoration: BoxDecoration(
-            color: isDarkMode ? AppColors.backgroundDark2 : Colors.white,
+            color: isDarkMode
+                ? AppColors.backgroundNavBar(context)
+                : Colors.white,
             borderRadius: BorderRadius.circular(35),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withValues(alpha: 
-                  isDarkMode ? 0.5 : 0.25,
+                color: Colors.black.withValues(
+                  alpha: isDarkMode ? 0.5 : 0.25,
                 ), // Ombre  A AJOUTER DANS COLORS
                 blurRadius: 20,
                 offset: const Offset(0, 5),

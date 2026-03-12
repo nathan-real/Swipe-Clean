@@ -22,26 +22,31 @@ class MyApp extends StatelessWidget {
       builder: (context, currentMode, child) {
         return MaterialApp(
           title: 'Swipe Clean',
-
+          debugShowCheckedModeBanner: false,
           themeMode: currentMode,
           // Paramètres pour le thème clair
           theme: ThemeData(
             brightness: Brightness.light,
-            scaffoldBackgroundColor: AppColors.textWhite,
+            scaffoldBackgroundColor: Colors.white,
             primaryColor: AppColors.main,
-            appBarTheme: const AppBarTheme(
+            appBarTheme: AppBarTheme(
               backgroundColor: AppColors.main,
-              foregroundColor: AppColors.textWhite,
+              foregroundColor: Colors.black,
             ),
           ),
 
           // Paramètres pour le thème dark
           darkTheme: ThemeData(
             brightness: Brightness.dark,
-            scaffoldBackgroundColor: AppColors.backgroundDark,
+            scaffoldBackgroundColor: const Color.fromARGB(
+              255,
+              30,
+              30,
+              30,
+            ), // Fond sombre
             appBarTheme: const AppBarTheme(
               backgroundColor: AppColors.main,
-              foregroundColor: AppColors.textWhite,
+              foregroundColor: Colors.white, // Texte de l'AppBar en blanc
             ),
           ),
 
