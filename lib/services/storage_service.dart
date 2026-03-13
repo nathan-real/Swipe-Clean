@@ -13,4 +13,16 @@ class StorageService {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getStringList('trash_photos') ?? [];
   }
+
+  // Fonction pour save le mode de tri
+  Future<void> saveSortMode(String mode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString('sortMode', mode);
+  }
+
+  // Récupérer le mode de tri
+  Future<String> getSortMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString('sortMode') ?? 'chronological';
+  }
 }

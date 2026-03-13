@@ -9,11 +9,13 @@ import '../services/gallery_service.dart';
 class SwipeScreen extends StatefulWidget {
   final Function(AssetEntity) onTrashPhoto;
   final Function(AssetEntity) onRemoveFromTrash;
+  final String sortMode;
 
   const SwipeScreen({
     super.key,
     required this.onTrashPhoto,
     required this.onRemoveFromTrash,
+    required this.sortMode,
   });
 
   @override
@@ -42,6 +44,28 @@ class _SwipeScreenState extends State<SwipeScreen> {
     super.dispose();
   }
 
+  @override
+  void didUpdateWidget(covariant SwipeScreen oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // On vérifie si le mode de tri a changé par rapport à avant
+    if (oldWidget.sortMode != widget.sortMode) {
+      _applySorting();
+    }
+  }
+
+  // Fonction qui applique ou non le filtre aléatoire
+  void _applySorting() {
+    setState(() {
+      if (widget.sortMode == 'random') {
+        // Mélange la liste au hasard
+        _images.shuffle();
+      } else {
+        // Trie par date de création (du plus récent au plus ancien)
+        _images.sort((a, b) => b.createDateTime.compareTo(a.createDateTime));
+      }
+    });
+  }
+
   Future<void> _loadPhotos() async {
     // On appelle notre service.
     // On donnera le mois et l'année plus tard ici
@@ -56,6 +80,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
       _images = filteredPhotos;
       _isLoading = false;
     });
+    _applySorting();
   }
 
   @override
