@@ -194,7 +194,7 @@ class FullScreenImagePage extends StatelessWidget {
             // Le bouton en dessous
             Padding(
               padding: const EdgeInsets.symmetric(vertical: 20.0),
-              child: FloatingActionButton(
+              child: FloatingActionButton.extended(
                 heroTag: "btn_undo_fullscreen",
                 onPressed: () {
                   // On retire la photo de la corbeille
@@ -202,8 +202,14 @@ class FullScreenImagePage extends StatelessWidget {
                   Navigator.pop(context); // On ferme la page plein écran
                 },
                 backgroundColor: Colors.grey,
-                shape: const CircleBorder(),
-                child: const Icon(Icons.undo, color: Colors.white),
+                icon: const Icon(Icons.undo, color: Colors.white),
+                label: const Text(
+                  "Enlever de la corbeille",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
             ),
           ],
