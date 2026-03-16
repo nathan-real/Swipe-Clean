@@ -5,6 +5,7 @@ import '../app_colors.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import '../services/gallery_service.dart';
+import '../widgets/mini_image_preview.dart';
 
 class SwipeScreen extends StatefulWidget {
   final Function(AssetEntity) onTrashPhoto;
@@ -34,6 +35,9 @@ class _SwipeScreenState extends State<SwipeScreen> {
   bool _isLoading = true;
 
   int _currentCardIndex = 0;
+
+  //Garde en mémoire les ID des photos supprimées pendant la session
+  final Set<String> _trashedInSession = {};
   @override
   // On load les photos à l'initialisation
   void initState() {
@@ -72,7 +76,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
   Future<void> _loadPhotos() async {
     // On appelle notre service.
     // On donnera le mois et l'année plus tard ici
-    final photos = await _galleryService.getImages(limit: 5000);
+    final photos = await _galleryService.getImages(limit: 500);
     final trashedIds = await StorageService().getTrashList();
     // On filtre en cherchant si parmis tous les ids des photos on supprimes celles qui sont aussi dans la corbeille
     final filteredPhotos = photos.where((photo) {
@@ -87,6 +91,25 @@ class _SwipeScreenState extends State<SwipeScreen> {
       _isLoading = false;
     });
     _applySorting();
+  }
+
+  // Fonction appelée depuis la pop-up pour mettre à la corbeille
+  void _sendPhotoToTrash(AssetEntity photo) {
+    // Ici on met vraiment la photo dans la corbeille
+    widget.onTrashPhoto(photo);
+
+    // On l'ajoute à notre mémoire locale pour que l'interface s'adapte
+    setState(() {
+      _trashedInSession.add(photo.id);
+
+      // On cherche la photo dans la liste du swiper
+      int targetIndex = _images.indexOf(photo);
+
+      // Si la photo est "dans le futur", on la supprime de la liste. Le swiper la sautera automatiquement
+      if (targetIndex != -1 && targetIndex > _currentCardIndex) {
+        _images.removeAt(targetIndex);
+      }
+    });
   }
 
   @override
@@ -132,6 +155,10 @@ class _SwipeScreenState extends State<SwipeScreen> {
                   }
                   // CAS 3 : L'utilisateur swipe à gauche
                   else if (direction == CardSwiperDirection.left) {
+                    // On enregistre dans la session qu'elle est supprimée
+                    setState(
+                      () => _trashedInSession.add(_images[previousIndex].id),
+                    );
                     widget.onTrashPhoto(_images[previousIndex]);
                     return true;
                   }
@@ -158,6 +185,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
                       return true; // On autorise l'animation de retour
                     },
                 cardBuilder: (context, index, x, y) {
+                  final photo = _images[index];
                   final double dragPourcentage =
                       x / (MediaQuery.of(context).size.width);
                   // On utilise un clamp à 1.0 au max pour éviter les erreurs
@@ -195,7 +223,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
 
                           // La photo
                           AssetEntityImage(
-                            _images[index],
+                            photo,
                             isOriginal: false,
                             thumbnailSize: const ThumbnailSize.square(1024),
 
@@ -251,34 +279,42 @@ class _SwipeScreenState extends State<SwipeScreen> {
                 padding: const EdgeInsets.only(bottom: 30),
                 child: Builder(
                   builder: (context) {
-                    // On prend la photo affichée en grand
                     final currentPhoto = _images[_currentCardIndex];
 
-                    // On cherche sa vraie place dans la liste chronologique
-                    final chronoIndex = _chronologicalImages.indexOf(
-                      currentPhoto,
-                    );
+                    //On crée une liste qui exclut les photos supprimées dans la session
+                    final validChronoImages = _chronologicalImages
+                        .where((img) => !_trashedInSession.contains(img.id))
+                        .toList();
 
-                    // On prépare les voisines (null si on est au tout début ou à la toute fin)
+                    // On cherche la position de la photo actuelle dans cette liste propre
+                    final chronoIndex = validChronoImages.indexOf(currentPhoto);
+
+                    //On prend les voisines
                     AssetEntity? nextPhoto = (chronoIndex > 0)
-                        ? _chronologicalImages[chronoIndex - 1]
+                        ? validChronoImages[chronoIndex - 1]
                         : null;
 
                     AssetEntity? previousPhoto =
-                        (chronoIndex < _chronologicalImages.length - 1)
-                        ? _chronologicalImages[chronoIndex + 1]
+                        (chronoIndex != -1 &&
+                            chronoIndex < validChronoImages.length - 1)
+                        ? validChronoImages[chronoIndex + 1]
                         : null;
 
                     return Row(
                       mainAxisAlignment: MainAxisAlignment.center,
-                      // On demande à la ligne d'aligner ses éléments par le haut
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // On passe la variable directement, la fonction gèrera si elle est 'null'
-                        _buildMiniImage(previousPhoto, "Image suivante"),
-
+                        MiniImagePreview(
+                          photo: previousPhoto,
+                          text: "Image suivante",
+                          onDelete: _sendPhotoToTrash,
+                        ),
                         const SizedBox(width: 30),
-                        _buildMiniImage(nextPhoto, "Image précédente"),
+                        MiniImagePreview(
+                          photo: nextPhoto,
+                          text: "Image précédente",
+                          onDelete: _sendPhotoToTrash,
+                        ),
                       ],
                     );
                   },
@@ -289,54 +325,4 @@ class _SwipeScreenState extends State<SwipeScreen> {
       ),
     );
   }
-}
-
-// Widget d'affichage des deux images en bas
-// On ajoute le "?" à AssetEntity pour accepter les valeurs nulles
-Widget _buildMiniImage(AssetEntity? photo, String text) {
-  return SizedBox(
-    width: 110, // On fixe la largeur totale pour donner de la place au texte
-    child: Column(
-      mainAxisSize: MainAxisSize.min,
-      children: [
-        if (photo != null)
-          Container(
-            width: 70,
-            height: 70,
-            decoration: BoxDecoration(
-              borderRadius: BorderRadius.circular(15),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.black.withValues(alpha: 0.2),
-                  blurRadius: 5,
-                  offset: const Offset(0, 3),
-                ),
-              ],
-            ),
-            child: ClipRRect(
-              borderRadius: BorderRadius.circular(15),
-              child: AssetEntityImage(
-                photo,
-                isOriginal: false,
-                thumbnailSize: const ThumbnailSize.square(200),
-                fit: BoxFit.cover,
-              ),
-            ),
-          )
-        else
-          const SizedBox(width: 70, height: 70),
-
-        const SizedBox(height: 7),
-
-        Text(
-          text,
-          textAlign: TextAlign.center, // On centre le texte sous l'image
-          style: const TextStyle(
-            fontSize: 12, // Un texte un peu plus petit
-            color: Colors.grey, // Pour que ça ressemble à un indicateur
-          ),
-        ),
-      ],
-    ),
-  );
 }
