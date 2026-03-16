@@ -29,8 +29,11 @@ class _SwipeScreenState extends State<SwipeScreen> {
   final GalleryService _galleryService = GalleryService();
 
   List<AssetEntity> _images = [];
+  //La liste de référence toujours triée
+  List<AssetEntity> _chronologicalImages = [];
   bool _isLoading = true;
 
+  int _currentCardIndex = 0;
   @override
   // On load les photos à l'initialisation
   void initState() {
@@ -69,7 +72,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
   Future<void> _loadPhotos() async {
     // On appelle notre service.
     // On donnera le mois et l'année plus tard ici
-    final photos = await _galleryService.getImages(limit: 100);
+    final photos = await _galleryService.getImages(limit: 5000);
     final trashedIds = await StorageService().getTrashList();
     // On filtre en cherchant si parmis tous les ids des photos on supprimes celles qui sont aussi dans la corbeille
     final filteredPhotos = photos.where((photo) {
@@ -77,6 +80,9 @@ class _SwipeScreenState extends State<SwipeScreen> {
     }).toList();
 
     setState(() {
+      _chronologicalImages = List.from(
+        filteredPhotos,
+      ); // Copie exacte pour la référence
       _images = filteredPhotos;
       _isLoading = false;
     });
@@ -113,6 +119,13 @@ class _SwipeScreenState extends State<SwipeScreen> {
                     return false;
                   }
 
+                  // On met à jour l'index de la carte actuelle dans la variable globale
+                  if (currentIndex != null) {
+                    setState(() {
+                      _currentCardIndex = currentIndex;
+                    });
+                  }
+
                   // CAS 2 : L'utilisateur swipe à droite
                   if (direction == CardSwiperDirection.right) {
                     return true;
@@ -137,6 +150,11 @@ class _SwipeScreenState extends State<SwipeScreen> {
                         // On la retire de la liste de la corbeille
                         widget.onRemoveFromTrash(_images[currentIndex]);
                       }
+
+                      // On met aussi à jour l'index de la carte actuelle
+                      setState(() {
+                        _currentCardIndex = currentIndex;
+                      });
                       return true; // On autorise l'animation de retour
                     },
                 cardBuilder: (context, index, x, y) {
@@ -195,6 +213,8 @@ class _SwipeScreenState extends State<SwipeScreen> {
                 },
               ),
             ),
+
+            // Les bouttons de control
             Padding(
               padding: const EdgeInsets.all(16.0),
               child: Row(
@@ -226,10 +246,97 @@ class _SwipeScreenState extends State<SwipeScreen> {
               ),
             ),
 
-            SizedBox(height: 130),
+            if (_currentCardIndex < _images.length)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 30),
+                child: Builder(
+                  builder: (context) {
+                    // On prend la photo affichée en grand
+                    final currentPhoto = _images[_currentCardIndex];
+
+                    // On cherche sa vraie place dans la liste chronologique
+                    final chronoIndex = _chronologicalImages.indexOf(
+                      currentPhoto,
+                    );
+
+                    // On prépare les voisines (null si on est au tout début ou à la toute fin)
+                    AssetEntity? nextPhoto = (chronoIndex > 0)
+                        ? _chronologicalImages[chronoIndex - 1]
+                        : null;
+
+                    AssetEntity? previousPhoto =
+                        (chronoIndex < _chronologicalImages.length - 1)
+                        ? _chronologicalImages[chronoIndex + 1]
+                        : null;
+
+                    return Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      // On demande à la ligne d'aligner ses éléments par le haut
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        // On passe la variable directement, la fonction gèrera si elle est 'null'
+                        _buildMiniImage(previousPhoto, "Image suivante"),
+
+                        const SizedBox(width: 30),
+                        _buildMiniImage(nextPhoto, "Image précédente"),
+                      ],
+                    );
+                  },
+                ),
+              ),
           ],
         ),
       ),
     );
   }
+}
+
+// Widget d'affichage des deux images en bas
+// On ajoute le "?" à AssetEntity pour accepter les valeurs nulles
+Widget _buildMiniImage(AssetEntity? photo, String text) {
+  return SizedBox(
+    width: 110, // On fixe la largeur totale pour donner de la place au texte
+    child: Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        if (photo != null)
+          Container(
+            width: 70,
+            height: 70,
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(15),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withValues(alpha: 0.2),
+                  blurRadius: 5,
+                  offset: const Offset(0, 3),
+                ),
+              ],
+            ),
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(15),
+              child: AssetEntityImage(
+                photo,
+                isOriginal: false,
+                thumbnailSize: const ThumbnailSize.square(200),
+                fit: BoxFit.cover,
+              ),
+            ),
+          )
+        else
+          const SizedBox(width: 70, height: 70),
+
+        const SizedBox(height: 7),
+
+        Text(
+          text,
+          textAlign: TextAlign.center, // On centre le texte sous l'image
+          style: const TextStyle(
+            fontSize: 12, // Un texte un peu plus petit
+            color: Colors.grey, // Pour que ça ressemble à un indicateur
+          ),
+        ),
+      ],
+    ),
+  );
 }
