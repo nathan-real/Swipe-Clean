@@ -19,4 +19,11 @@ class AppColors {
               .white // Texte blanc sur fond sombre
         : Colors.black; // Texte noir sur fond clair
   }
+
+  // Pillule main folders
+  static Color pills(BuildContext context) {
+    return Theme.of(context).brightness == Brightness.dark
+        ? const Color.fromARGB(255, 20, 20, 20)
+        : const Color.fromARGB(255, 229, 229, 229);
+  }
 }

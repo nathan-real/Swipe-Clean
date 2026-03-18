@@ -7,11 +7,15 @@ import '../app_colors.dart';
 class SortPage extends StatefulWidget {
   final Function(AssetEntity) onTrashPhoto;
   final Function(AssetEntity) onRemoveFromTrash;
+  final List<AssetEntity> photosToSort;
+  final String title;
 
   const SortPage({
     super.key,
     required this.onTrashPhoto,
     required this.onRemoveFromTrash,
+    required this.photosToSort,
+    required this.title,
   });
   @override
   State<SortPage> createState() => _SortPageState();
@@ -20,6 +24,9 @@ class SortPage extends StatefulWidget {
 class _SortPageState extends State<SortPage>
     with AutomaticKeepAliveClientMixin {
   String _sortMode = 'chronological';
+
+  List<AssetEntity> _images = [];
+
   @override
   bool get wantKeepAlive => true;
 
@@ -27,6 +34,8 @@ class _SortPageState extends State<SortPage>
   void initState() {
     super.initState();
     _loadSavedSortMode();
+    // On copie la liste reçue pour pouvoir la manipuler
+    _images = List.from(widget.photosToSort);
   }
 
   Future<void> _loadSavedSortMode() async {
@@ -41,7 +50,7 @@ class _SortPageState extends State<SortPage>
     super.build(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Tri de Janvier'),
+        title: Text(widget.title),
         foregroundColor: Colors.white,
         actions: [
           IconButton(
@@ -156,6 +165,7 @@ class _SortPageState extends State<SortPage>
               onTrashPhoto: widget.onTrashPhoto,
               onRemoveFromTrash: widget.onRemoveFromTrash,
               sortMode: _sortMode,
+              photos: _images,
             ),
           ),
         ],

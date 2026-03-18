@@ -1,12 +1,22 @@
 import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
 import 'app_colors.dart';
+import 'package:flutter/services.dart';
 
 // Variable global pour le thème
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
 
 void main() {
-  runApp(const MyApp());
+  WidgetsFlutterBinding.ensureInitialized();
+
+  // On impose les orientations autorisées
+  SystemChrome.setPreferredOrientations([
+    DeviceOrientation.portraitUp,
+    DeviceOrientation.portraitDown,
+  ]).then((_) {
+    // On lance l'application uniquement une fois que le système a validé ce réglage
+    runApp(const MyApp());
+  });
 }
 
 class MyApp extends StatelessWidget {

@@ -4,7 +4,6 @@ import 'package:swipe_clean/services/storage_service.dart';
 import '../app_colors.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
-import '../services/gallery_service.dart';
 import '../widgets/mini_image_preview.dart';
 
 class SwipeScreen extends StatefulWidget {
@@ -12,11 +11,14 @@ class SwipeScreen extends StatefulWidget {
   final Function(AssetEntity) onRemoveFromTrash;
   final String sortMode;
 
+  final List<AssetEntity> photos;
+
   const SwipeScreen({
     super.key,
     required this.onTrashPhoto,
     required this.onRemoveFromTrash,
     required this.sortMode,
+    required this.photos,
   });
 
   @override
@@ -27,7 +29,6 @@ class _SwipeScreenState extends State<SwipeScreen> {
   final CardSwiperController controller = CardSwiperController();
 
   // On instancie notre service de photo
-  final GalleryService _galleryService = GalleryService();
 
   List<AssetEntity> _images = [];
   //La liste de référence toujours triée
@@ -73,13 +74,11 @@ class _SwipeScreenState extends State<SwipeScreen> {
     });
   }
 
+  // Fonction qui charge les photos
   Future<void> _loadPhotos() async {
-    // On appelle notre service.
-    // On donnera le mois et l'année plus tard ici
-    final photos = await _galleryService.getImages(limit: 500);
     final trashedIds = await StorageService().getTrashList();
     // On filtre en cherchant si parmis tous les ids des photos on supprimes celles qui sont aussi dans la corbeille
-    final filteredPhotos = photos.where((photo) {
+    final filteredPhotos = widget.photos.where((photo) {
       return !trashedIds.contains(photo.id);
     }).toList();
 
@@ -130,9 +129,10 @@ class _SwipeScreenState extends State<SwipeScreen> {
           children: [
             Expanded(
               child: CardSwiper(
+                isLoop: false,
                 controller: controller,
                 cardsCount: _images.length,
-                numberOfCardsDisplayed: 2,
+                numberOfCardsDisplayed: _images.length > 1 ? 2 : 1,
                 allowedSwipeDirection: const AllowedSwipeDirection.all(),
 
                 onSwipe: (previousIndex, currentIndex, direction) {

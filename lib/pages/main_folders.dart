@@ -3,6 +3,7 @@ import 'package:photo_manager/photo_manager.dart';
 import '../widgets/custom_header.dart';
 import 'sort_page.dart';
 import 'package:swipe_clean/app_colors.dart';
+import '../services/gallery_service.dart';
 
 class MainFolders extends StatefulWidget {
   final Function(AssetEntity) onTrashPhoto;
@@ -20,8 +21,101 @@ class MainFolders extends StatefulWidget {
 
 class _MainFoldersState extends State<MainFolders>
     with AutomaticKeepAliveClientMixin {
+  bool _isLoading = true;
+  // Dictionnaire pour ranger les mois par année
+  Map<int, Map<int, List<AssetEntity>>> _foldersMap = {};
+
   @override
   bool get wantKeepAlive => true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadFolders();
+  }
+
+  // Fonction pour charger les dossiers
+  Future<void> _loadFolders() async {
+    const int chunkSize = 2000; // Taille de la tranche
+    int currentOffset = 0;
+    bool hasMore = true;
+
+    Map<int, Map<int, List<AssetEntity>>> tempFolders = {};
+    while (hasMore) {
+      // On demande une tranche de photos
+      final photosChunk = await GalleryService().getImages(
+        start: currentOffset,
+        limit: chunkSize,
+      );
+
+      //Si la tranche est vide, on a atteint la fin de la galerie
+      if (photosChunk.isEmpty) {
+        hasMore = false;
+        break;
+      }
+
+      // On traite les dates de cette tranche
+      for (var photo in photosChunk) {
+        // Optionnel : On s'assure que la date est valide avant de l'utiliser
+        final year = photo.createDateTime.year;
+        final month = photo.createDateTime.month;
+
+        if (!tempFolders.containsKey(year)) {
+          tempFolders[year] = {};
+        }
+        if (!tempFolders[year]!.containsKey(month)) {
+          tempFolders[year]![month] = [];
+        }
+
+        // On ajoute la photo à la liste du mois
+        tempFolders[year]![month]!.add(photo);
+      }
+
+      //On prépare les données pour l'affichage
+      // On créer un dico d'entiers pour les années et de liste des photos pour les mois de chaques années
+      Map<int, Map<int, List<AssetEntity>>> finalFolders = {};
+      final sortedYears = tempFolders.keys.toList()
+        ..sort((a, b) => b.compareTo(a));
+
+      for (var year in sortedYears) {
+        final sortedMonths = tempFolders[year]!.keys.toList()
+          ..sort((a, b) => b.compareTo(a));
+        finalFolders[year] = {};
+        for (var month in sortedMonths) {
+          finalFolders[year]![month] = tempFolders[year]![month]!;
+        }
+      }
+
+      // On met à jour l'écran immédiatement
+      // L'utilisateur verra les premiers dossiers apparaître
+      setState(() {
+        _foldersMap = finalFolders;
+        _isLoading = false;
+      });
+
+      // On décale le curseur pour la prochaine requête en arrière-plan
+      currentOffset += chunkSize;
+    }
+  }
+
+  // Petit outil pour traduire le numéro du mois en texte
+  String _getMonthName(int monthNumber) {
+    const months = [
+      'Janvier',
+      'Février',
+      'Mars',
+      'Avril',
+      'Mai',
+      'Juin',
+      'Juillet',
+      'Août',
+      'Septembre',
+      'Octobre',
+      'Novembre',
+      'Décembre',
+    ];
+    return months[monthNumber - 1];
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,52 +125,130 @@ class _MainFoldersState extends State<MainFolders>
         const SizedBox(height: 20),
         const CustomHeader(),
         const SizedBox(height: 10),
+
+        // Affichage des dossiers
         Expanded(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.center,
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator())
+              : _foldersMap.isEmpty
+              ? const Center(
+                  child: Text("Aucune photo trouvée sur l'appareil."),
+                )
+              : ListView.builder(
+                  padding: const EdgeInsets.only(bottom: 120),
+                  itemCount: _foldersMap.length,
+                  // Ici on construit une tuile de la liste
+                  itemBuilder: (context, index) {
+                    final year = _foldersMap.keys.elementAt(index);
+                    final monthsData = _foldersMap[year]!;
+                    final monthsList = monthsData.keys
+                        .toList(); // Les numéros des mois
 
-            children: [
-              ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.main,
-                  foregroundColor: Colors.white,
-                ),
-                onPressed: () {
-                  Navigator.of(context).push(
-                    // PageRouteBuilder pour modifier l'animation
-                    PageRouteBuilder(
-                      // Quand on appuie sur le bouton on va afficher la page de trie et on passe la fonction de corbeille
-                      pageBuilder: (context, animation, secondaryAnimation) =>
-                          SortPage(
-                            onTrashPhoto: widget.onTrashPhoto,
-                            onRemoveFromTrash: widget.onRemoveFromTrash,
+                    return Container(
+                      // Les marges pour détacher la tuile des autres et des bords de l'écran
+                      margin: const EdgeInsets.symmetric(
+                        horizontal: 16.0,
+                        vertical: 6.0,
+                      ),
+
+                      decoration: BoxDecoration(
+                        color: AppColors.pills(context),
+                        borderRadius: BorderRadius.circular(30.0),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.05),
+                            blurRadius: 10,
+                            offset: const Offset(0, 4),
                           ),
+                        ],
+                      ),
 
-                      transitionsBuilder:
-                          (context, animation, secondaryAnimation, child) {
-                            const begin = Offset(0.0, 1.0);
-                            const end = Offset.zero;
-                            const curve = Curves.easeOutCubic;
-                            var tween = Tween(
-                              begin: begin,
-                              end: end,
-                            ).chain(CurveTween(curve: curve));
-                            var offsetAnimation = animation.drive(tween);
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(30.0),
 
-                            return SlideTransition(
-                              position: offsetAnimation,
-                              child: child,
-                            );
-                          },
-                      transitionDuration: const Duration(milliseconds: 500),
-                    ),
-                  );
-                },
-                child: const Text('Démarrer le tri'),
-              ),
-            ],
-          ),
+                        child: Theme(
+                          // Enlève les bordures par défaut de l'ExpansionTile
+                          data: Theme.of(context).copyWith(
+                            dividerColor: Colors.transparent,
+                            splashFactory: NoSplash.splashFactory,
+                          ),
+                          // La brique principale de la listview
+                          child: ExpansionTile(
+                            iconColor: AppColors.main,
+                            textColor: AppColors.main,
+
+                            title: Text(
+                              year.toString(),
+                              style: const TextStyle(
+                                fontSize: 22,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            children: monthsList.map((month) {
+                              final photosForThisMonth = monthsData[month]!;
+                              // Composant présent dans la place qui s'étend
+                              return ListTile(
+                                contentPadding: const EdgeInsets.symmetric(
+                                  horizontal: 40,
+                                ),
+                                title: Text(_getMonthName(month)),
+                                trailing: const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 16,
+                                  color: Colors.grey,
+                                ),
+                                onTap: () {
+                                  Navigator.of(context).push(
+                                    PageRouteBuilder(
+                                      pageBuilder:
+                                          (
+                                            context,
+                                            animation,
+                                            secondaryAnimation,
+                                          ) => SortPage(
+                                            onTrashPhoto: widget.onTrashPhoto,
+                                            onRemoveFromTrash:
+                                                widget.onRemoveFromTrash,
+                                            photosToSort: photosForThisMonth,
+                                            title:
+                                                "${_getMonthName(month)} $year"
+                                          ),
+                                      transitionsBuilder:
+                                          (
+                                            context,
+                                            animation,
+                                            secondaryAnimation,
+                                            child,
+                                          ) {
+                                            const begin = Offset(0.0, 1.0);
+                                            const end = Offset.zero;
+                                            const curve = Curves.easeOutCubic;
+                                            var tween = Tween(
+                                              begin: begin,
+                                              end: end,
+                                            ).chain(CurveTween(curve: curve));
+                                            var offsetAnimation = animation
+                                                .drive(tween);
+
+                                            return SlideTransition(
+                                              position: offsetAnimation,
+                                              child: child,
+                                            );
+                                          },
+                                      transitionDuration: const Duration(
+                                        milliseconds: 500,
+                                      ),
+                                    ),
+                                  );
+                                },
+                              );
+                            }).toList(),
+                          ),
+                        ),
+                      ),
+                    );
+                  },
+                ),
         ),
       ],
     );

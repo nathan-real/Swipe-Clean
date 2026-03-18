@@ -2,9 +2,8 @@ import 'package:photo_manager/photo_manager.dart';
 
 class GalleryService {
   Future<List<AssetEntity>> getImages({
-    int limit = 100,
-    int? month, // on verra après ça
-    int? year,
+    int start = 0,
+    int limit = 2000,
   }) async {
     final PermissionState ps = await PhotoManager.requestPermissionExtend();
     if (!ps.isAuth && !ps.hasAccess) {
@@ -13,8 +12,8 @@ class GalleryService {
     }
 
     // Si l'utilisateur accepte
-    // Configuration du filtre (c'est ici qu'on fera le tri par date plus tard)
-    final FilterOptionGroup filterOption = FilterOptionGroup(
+    // Configuration du filtre
+    FilterOptionGroup filterOption = FilterOptionGroup(
       orders: [
         // On veut les plus récentes en premier
         const OrderOption(type: OrderOptionType.createDate, asc: false),
@@ -23,6 +22,7 @@ class GalleryService {
 
     // Récupérer les albums (Le "Recent" est toujours le premier)
     final List<AssetPathEntity> albums = await PhotoManager.getAssetPathList(
+      onlyAll: true,
       type: RequestType.image,
       filterOption: filterOption,
     );
@@ -32,11 +32,9 @@ class GalleryService {
     // On prend l'album "Recent"
     final AssetPathEntity recentAlbum = albums.first;
 
-    // Récupérer les photos (Pagination)
-    // Ici on prend de 0 à 100.
     final List<AssetEntity> photos = await recentAlbum.getAssetListRange(
-      start: 0,
-      end: limit,
+      start: start,
+      end: start + limit,
     );
 
     return photos;
