@@ -144,6 +144,12 @@ class _MainFoldersState extends State<MainFolders>
                     final monthsList = monthsData.keys
                         .toList(); // Les numéros des mois
 
+                    // Somme du nombre de photo par an
+                    final int totalPhotosForYear = monthsData.values.fold(
+                      0,
+                      (sum, photos) => sum + photos.length,
+                    );
+
                     return Container(
                       // Les marges pour détacher la tuile des autres et des bords de l'écran
                       margin: const EdgeInsets.symmetric(
@@ -177,21 +183,67 @@ class _MainFoldersState extends State<MainFolders>
                             iconColor: AppColors.main,
                             textColor: AppColors.main,
 
-                            title: Text(
-                              year.toString(),
-                              style: const TextStyle(
-                                fontSize: 22,
-                                fontWeight: FontWeight.bold,
+                            title: Text.rich(
+                              TextSpan(
+                                children: [
+                                  //L'année en grand et en gras
+                                  TextSpan(
+                                    text: year.toString(),
+                                    style: const TextStyle(
+                                      fontSize: 22,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                  // Le nombre de photos
+                                  TextSpan(
+                                    text: "  ($totalPhotosForYear photos)",
+                                    style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.normal,
+                                      color: AppColors.text(
+                                        context,
+                                      ).withValues(alpha: 0.6),
+                                    ),
+                                  ),
+                                ],
                               ),
                             ),
                             children: monthsList.map((month) {
                               final photosForThisMonth = monthsData[month]!;
+
+                              final int monthPhotoCount =
+                                  photosForThisMonth.length;
+
                               // Composant présent dans la place qui s'étend
                               return ListTile(
                                 contentPadding: const EdgeInsets.symmetric(
                                   horizontal: 40,
                                 ),
-                                title: Text(_getMonthName(month)),
+                                title: Text.rich(
+                                  TextSpan(
+                                    children: [
+                                      // Le nom du mois
+                                      TextSpan(
+                                        text: _getMonthName(month),
+                                        style: const TextStyle(
+                                          fontSize:
+                                              16, // Un peu plus petit que l'année
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                      // Le compteur de photos
+                                      TextSpan(
+                                        text: "  ($monthPhotoCount)",
+                                        style: TextStyle(
+                                          fontSize: 13,
+                                          color: AppColors.text(
+                                            context,
+                                          ).withValues(alpha: 0.6),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                                 trailing: const Icon(
                                   Icons.arrow_forward_ios_rounded,
                                   size: 16,
@@ -211,7 +263,7 @@ class _MainFoldersState extends State<MainFolders>
                                                 widget.onRemoveFromTrash,
                                             photosToSort: photosForThisMonth,
                                             title:
-                                                "${_getMonthName(month)} $year"
+                                                "${_getMonthName(month)} $year",
                                           ),
                                       transitionsBuilder:
                                           (
