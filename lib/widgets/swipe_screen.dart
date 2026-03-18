@@ -83,10 +83,10 @@ class _SwipeScreenState extends State<SwipeScreen> {
     }).toList();
 
     setState(() {
-      _chronologicalImages = List.from(
-        filteredPhotos,
-      ); // Copie exacte pour la référence
-      _images = filteredPhotos;
+      _chronologicalImages = List.from(filteredPhotos)
+        ..sort((a, b) => a.createDateTime.compareTo(b.createDateTime));
+      // Copie exacte pour la référence
+      _images = List.from(filteredPhotos);
       _isLoading = false;
     });
     _applySorting();
@@ -287,18 +287,25 @@ class _SwipeScreenState extends State<SwipeScreen> {
                         .toList();
 
                     // On cherche la position de la photo actuelle dans cette liste propre
-                    final chronoIndex = validChronoImages.indexOf(currentPhoto);
+                    final chronoIndex = validChronoImages.indexWhere(
+                      (img) => img.id == currentPhoto.id,
+                    );
+
+                    AssetEntity? nextPhoto;
+                    AssetEntity? previousPhoto;
 
                     //On prend les voisines
-                    AssetEntity? nextPhoto = (chronoIndex > 0)
-                        ? validChronoImages[chronoIndex - 1]
-                        : null;
+                    if (chronoIndex != -1) {
+                      // S'il y a des photos avant dans la liste (donc plus récentes)
+                      if (chronoIndex > 0) {
+                        previousPhoto = validChronoImages[chronoIndex - 1];
+                      }
 
-                    AssetEntity? previousPhoto =
-                        (chronoIndex != -1 &&
-                            chronoIndex < validChronoImages.length - 1)
-                        ? validChronoImages[chronoIndex + 1]
-                        : null;
+                      // S'il y a des photos après dans la liste (donc plus anciennes)
+                      if (chronoIndex < validChronoImages.length - 1) {
+                        nextPhoto = validChronoImages[chronoIndex + 1];
+                      }
+                    }
 
                     return Row(
                       mainAxisAlignment: MainAxisAlignment.center,
