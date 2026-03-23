@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import '../widgets/custom_header.dart';
 import 'sort_page.dart';
 import 'package:swipe_clean/app_colors.dart';
 import '../services/gallery_service.dart';
+import '../utils/slide_up_route.dart';
+import '../widgets/folder_explorer_sheet.dart';
 
 class MainFolders extends StatefulWidget {
   final Function(AssetEntity) onTrashPhoto;
@@ -117,6 +120,30 @@ class _MainFoldersState extends State<MainFolders>
     return months[monthNumber - 1];
   }
 
+  void _loadAllPhotos() {
+    List<AssetEntity> allPhotos = [];
+
+    for (int year in _foldersMap.keys) {
+      final monthsData = _foldersMap[year]!;
+
+      for (int month in monthsData.keys) {
+        allPhotos.addAll(monthsData[month]!);
+      }
+    }
+
+    Navigator.push(
+      context,
+      SlideUpRoute(
+        page: SortPage(
+          onTrashPhoto: widget.onTrashPhoto,
+          onRemoveFromTrash: widget.onRemoveFromTrash,
+          photosToSort: allPhotos,
+          title: "Toute la galerie",
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     super.build(context);
@@ -124,6 +151,37 @@ class _MainFoldersState extends State<MainFolders>
       children: [
         const SizedBox(height: 20),
         const CustomHeader(),
+        const SizedBox(height: 10),
+
+        Row(
+          mainAxisAlignment:
+              MainAxisAlignment.center, // Pour les espacer proprement
+          children: [
+            ElevatedButton.icon(
+              onPressed: _loadAllPhotos,
+              icon: const Icon(Icons.layers_rounded),
+              label: const Text("Toute la galerie"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.main,
+                foregroundColor: Colors.white,
+              ),
+            ),
+            SizedBox(width: 12),
+            ElevatedButton.icon(
+              onPressed: () => openFolderExplorerSheet(
+                context,
+                onTrashPhoto: widget.onTrashPhoto,
+                onRemoveFromTrash: widget.onRemoveFromTrash,
+              ),
+              icon: const Icon(Icons.folder_rounded),
+              label: const Text("Dossier"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.main,
+                foregroundColor: Colors.white,
+              ),
+            ),
+          ],
+        ),
         const SizedBox(height: 10),
 
         // Affichage des dossiers
@@ -214,10 +272,44 @@ class _MainFoldersState extends State<MainFolders>
                               final int monthPhotoCount =
                                   photosForThisMonth.length;
 
+                              final AssetEntity firstPhoto =
+                                  photosForThisMonth.first;
+
                               // Composant présent dans la place qui s'étend
                               return ListTile(
                                 contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 40,
+                                  horizontal: 20,
+                                ),
+                                leading: Container(
+                                  width: 45, // Taille du carré
+                                  height: 45,
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
+                                  // Pour que l'image respecte les bords arrondis du container
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(10),
+                                    child: Stack(
+                                      fit: StackFit.expand,
+                                      children: [
+                                        // Fond uni au cas où l'image tarde à charger
+                                        Container(
+                                          color: AppColors.main.withValues(
+                                            alpha: 0.1,
+                                          ),
+                                        ),
+                                        // La photo de preview
+                                        AssetEntityImage(
+                                          firstPhoto,
+                                          isOriginal:
+                                              false, // On demande une miniature
+                                          thumbnailSize:
+                                              const ThumbnailSize.square(100),
+                                          fit: BoxFit.cover,
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                                 title: Text.rich(
                                   TextSpan(
@@ -250,45 +342,15 @@ class _MainFoldersState extends State<MainFolders>
                                   color: Colors.grey,
                                 ),
                                 onTap: () {
-                                  Navigator.of(context).push(
-                                    PageRouteBuilder(
-                                      pageBuilder:
-                                          (
-                                            context,
-                                            animation,
-                                            secondaryAnimation,
-                                          ) => SortPage(
-                                            onTrashPhoto: widget.onTrashPhoto,
-                                            onRemoveFromTrash:
-                                                widget.onRemoveFromTrash,
-                                            photosToSort: photosForThisMonth,
-                                            title:
-                                                "${_getMonthName(month)} $year",
-                                          ),
-                                      transitionsBuilder:
-                                          (
-                                            context,
-                                            animation,
-                                            secondaryAnimation,
-                                            child,
-                                          ) {
-                                            const begin = Offset(0.0, 1.0);
-                                            const end = Offset.zero;
-                                            const curve = Curves.easeOutCubic;
-                                            var tween = Tween(
-                                              begin: begin,
-                                              end: end,
-                                            ).chain(CurveTween(curve: curve));
-                                            var offsetAnimation = animation
-                                                .drive(tween);
-
-                                            return SlideTransition(
-                                              position: offsetAnimation,
-                                              child: child,
-                                            );
-                                          },
-                                      transitionDuration: const Duration(
-                                        milliseconds: 500,
+                                  Navigator.push(
+                                    context,
+                                    SlideUpRoute(
+                                      page: SortPage(
+                                        onTrashPhoto: widget.onTrashPhoto,
+                                        onRemoveFromTrash:
+                                            widget.onRemoveFromTrash,
+                                        photosToSort: photosForThisMonth,
+                                        title: "${_getMonthName(month)} $year",
                                       ),
                                     ),
                                   );
