@@ -239,6 +239,8 @@ class _MainFoldersState extends State<MainFolders>
                           data: Theme.of(context).copyWith(
                             dividerColor: Colors.transparent,
                             splashFactory: NoSplash.splashFactory,
+                            highlightColor: Colors.transparent,
+                            hoverColor: Colors.transparent,
                           ),
                           // La brique principale de la listview
                           child: ExpansionTile(
