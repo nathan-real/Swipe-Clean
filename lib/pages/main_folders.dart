@@ -41,66 +41,77 @@ class _MainFoldersState extends State<MainFolders>
   }
 
   // Fonction pour charger les dossiers
+  // Fonction pour charger les dossiers
   Future<void> _loadFolders() async {
     const int chunkSize = 2000; // Taille de la tranche
     int currentOffset = 0;
     bool hasMore = true;
-
     Map<int, Map<int, List<AssetEntity>>> tempFolders = {};
-    while (hasMore) {
-      // On demande une tranche de photos
-      final photosChunk = await GalleryService().getImages(
-        start: currentOffset,
-        limit: chunkSize,
-      );
 
-      //Si la tranche est vide, on a atteint la fin de la galerie
-      if (photosChunk.isEmpty) {
-        hasMore = false;
-        break;
-      }
+    try {
+      while (hasMore) {
+        // On demande une tranche de photos
+        final photosChunk = await GalleryService().getImages(
+          start: currentOffset,
+          limit: chunkSize,
+        );
 
-      // On traite les dates de cette tranche
-      for (var photo in photosChunk) {
-        // Optionnel : On s'assure que la date est valide avant de l'utiliser
-        final year = photo.createDateTime.year;
-        final month = photo.createDateTime.month;
-
-        if (!tempFolders.containsKey(year)) {
-          tempFolders[year] = {};
-        }
-        if (!tempFolders[year]!.containsKey(month)) {
-          tempFolders[year]![month] = [];
+        // Si la tranche est vide, on a atteint la fin de la galerie
+        if (photosChunk.isEmpty) {
+          hasMore = false;
+          break; // Sort de la boucle
         }
 
-        // On ajoute la photo à la liste du mois
-        tempFolders[year]![month]!.add(photo);
-      }
+        // On traite les dates de cette tranche
+        for (var photo in photosChunk) {
+          final year = photo.createDateTime.year;
+          final month = photo.createDateTime.month;
 
-      //On prépare les données pour l'affichage
-      // On créer un dico d'entiers pour les années et de liste des photos pour les mois de chaques années
-      Map<int, Map<int, List<AssetEntity>>> finalFolders = {};
-      final sortedYears = tempFolders.keys.toList()
-        ..sort((a, b) => b.compareTo(a));
+          if (!tempFolders.containsKey(year)) {
+            tempFolders[year] = {};
+          }
+          if (!tempFolders[year]!.containsKey(month)) {
+            tempFolders[year]![month] = [];
+          }
 
-      for (var year in sortedYears) {
-        final sortedMonths = tempFolders[year]!.keys.toList()
+          // On ajoute la photo à la liste du mois
+          tempFolders[year]![month]!.add(photo);
+        }
+
+        // On prépare les données pour l'affichage
+        Map<int, Map<int, List<AssetEntity>>> finalFolders = {};
+        final sortedYears = tempFolders.keys.toList()
           ..sort((a, b) => b.compareTo(a));
-        finalFolders[year] = {};
-        for (var month in sortedMonths) {
-          finalFolders[year]![month] = tempFolders[year]![month]!;
+
+        for (var year in sortedYears) {
+          final sortedMonths = tempFolders[year]!.keys.toList()
+            ..sort((a, b) => b.compareTo(a));
+          finalFolders[year] = {};
+          for (var month in sortedMonths) {
+            finalFolders[year]![month] = tempFolders[year]![month]!;
+          }
         }
+
+        // Met à jour l'interface au fur et à mesure si le widget est toujours affiché
+        if (mounted) {
+          setState(() {
+            _foldersMap = finalFolders;
+            _isLoading = false;
+          });
+        }
+
+        currentOffset += chunkSize;
       }
-
-      // On met à jour l'écran immédiatement
-      // L'utilisateur verra les premiers dossiers apparaître
-      setState(() {
-        _foldersMap = finalFolders;
-        _isLoading = false;
-      });
-
-      // On décale le curseur pour la prochaine requête en arrière-plan
-      currentOffset += chunkSize;
+    } catch (e) {
+      debugPrint("Erreur lors du chargement des dossiers : $e");
+    } finally {
+      // Ce bloc s'exécute tjrs à la fin
+      // Si la boucle a fait "break" au premier tour, on coupe quand même le chargement
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
     }
   }
 
