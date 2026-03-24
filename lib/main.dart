@@ -3,6 +3,9 @@ import 'pages/home_page.dart';
 import 'app_colors.dart';
 import 'package:flutter/services.dart';
 
+//Langue
+import 'l10n/app_localizations.dart';
+
 // Variable global pour le thème
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
 
@@ -32,6 +35,8 @@ class MyApp extends StatelessWidget {
       builder: (context, currentMode, child) {
         return MaterialApp(
           title: 'Swipe Clean',
+          localizationsDelegates: AppLocalizations.localizationsDelegates,
+          supportedLocales: AppLocalizations.supportedLocales,
           debugShowCheckedModeBanner: false,
           themeMode: currentMode,
           // Paramètres pour le thème clair

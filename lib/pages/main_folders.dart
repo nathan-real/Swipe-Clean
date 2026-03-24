@@ -8,6 +8,9 @@ import '../services/gallery_service.dart';
 import '../utils/slide_up_route.dart';
 import '../widgets/folder_explorer_sheet.dart';
 
+// Langue
+import '../l10n/app_localizations.dart';
+
 class MainFolders extends StatefulWidget {
   final Function(AssetEntity) onTrashPhoto;
   final Function(AssetEntity) onRemoveFromTrash;
@@ -102,21 +105,25 @@ class _MainFoldersState extends State<MainFolders>
   }
 
   // Petit outil pour traduire le numéro du mois en texte
-  String _getMonthName(int monthNumber) {
-    const months = [
-      'Janvier',
-      'Février',
-      'Mars',
-      'Avril',
-      'Mai',
-      'Juin',
-      'Juillet',
-      'Août',
-      'Septembre',
-      'Octobre',
-      'Novembre',
-      'Décembre',
+  String _getMonthName(BuildContext context, int monthNumber) {
+    // On charge les traductions une seule fois pour la fonction
+    final l10n = AppLocalizations.of(context)!;
+
+    final months = [
+      l10n.january,
+      l10n.february,
+      l10n.march,
+      l10n.april,
+      l10n.may,
+      l10n.june,
+      l10n.july,
+      l10n.august,
+      l10n.september,
+      l10n.october,
+      l10n.november,
+      l10n.december,
     ];
+
     return months[monthNumber - 1];
   }
 
@@ -138,7 +145,7 @@ class _MainFoldersState extends State<MainFolders>
           onTrashPhoto: widget.onTrashPhoto,
           onRemoveFromTrash: widget.onRemoveFromTrash,
           photosToSort: allPhotos,
-          title: "Toute la galerie",
+          title: AppLocalizations.of(context)!.allGallery,
         ),
       ),
     );
@@ -149,7 +156,6 @@ class _MainFoldersState extends State<MainFolders>
     super.build(context);
     return Column(
       children: [
-        const SizedBox(height: 20),
         const CustomHeader(),
         const SizedBox(height: 10),
 
@@ -160,7 +166,7 @@ class _MainFoldersState extends State<MainFolders>
             ElevatedButton.icon(
               onPressed: _loadAllPhotos,
               icon: const Icon(Icons.layers_rounded),
-              label: const Text("Toute la galerie"),
+              label: Text(AppLocalizations.of(context)!.allGallery),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.main,
                 foregroundColor: Colors.white,
@@ -174,7 +180,7 @@ class _MainFoldersState extends State<MainFolders>
                 onRemoveFromTrash: widget.onRemoveFromTrash,
               ),
               icon: const Icon(Icons.folder_rounded),
-              label: const Text("Dossier"),
+              label: Text(AppLocalizations.of(context)!.folder),
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.main,
                 foregroundColor: Colors.white,
@@ -189,9 +195,7 @@ class _MainFoldersState extends State<MainFolders>
           child: _isLoading
               ? const Center(child: CircularProgressIndicator())
               : _foldersMap.isEmpty
-              ? const Center(
-                  child: Text("Aucune photo trouvée sur l'appareil."),
-                )
+              ? Center(child: Text(AppLocalizations.of(context)!.noPhotos))
               : ListView.builder(
                   padding: const EdgeInsets.only(bottom: 120),
                   itemCount: _foldersMap.length,
@@ -254,7 +258,8 @@ class _MainFoldersState extends State<MainFolders>
                                   ),
                                   // Le nombre de photos
                                   TextSpan(
-                                    text: "  ($totalPhotosForYear photos)",
+                                    text:
+                                        "  ($totalPhotosForYear ${AppLocalizations.of(context)!.photos})",
                                     style: TextStyle(
                                       fontSize: 14,
                                       fontWeight: FontWeight.normal,
@@ -316,7 +321,7 @@ class _MainFoldersState extends State<MainFolders>
                                     children: [
                                       // Le nom du mois
                                       TextSpan(
-                                        text: _getMonthName(month),
+                                        text: _getMonthName(context, month),
                                         style: const TextStyle(
                                           fontSize:
                                               16, // Un peu plus petit que l'année
@@ -350,7 +355,8 @@ class _MainFoldersState extends State<MainFolders>
                                         onRemoveFromTrash:
                                             widget.onRemoveFromTrash,
                                         photosToSort: photosForThisMonth,
-                                        title: "${_getMonthName(month)} $year",
+                                        title:
+                                            "${_getMonthName(context, month)} $year",
                                       ),
                                     ),
                                   );

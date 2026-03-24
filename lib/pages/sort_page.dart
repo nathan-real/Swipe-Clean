@@ -4,6 +4,9 @@ import '../services/storage_service.dart';
 import '../widgets/swipe_screen.dart';
 import '../app_colors.dart';
 
+// Langue
+import '../l10n/app_localizations.dart';
+
 class SortPage extends StatefulWidget {
   final Function(AssetEntity) onTrashPhoto;
   final Function(AssetEntity) onRemoveFromTrash;
@@ -67,7 +70,7 @@ class _SortPageState extends State<SortPage>
                         backgroundColor: AppColors.backgroundNavBar(context),
                         surfaceTintColor: Colors.transparent,
                         title: Text(
-                          "Mode de tri",
+                          AppLocalizations.of(context)!.sortMode,
                           style: TextStyle(
                             color: AppColors.text(context),
                             fontWeight: FontWeight.bold,
@@ -104,15 +107,15 @@ class _SortPageState extends State<SortPage>
                               ),
                             ),
                           ),
-                          segments: const [
+                          segments: [
                             ButtonSegment(
                               value: 'chronological',
-                              label: Text("Chrono"),
+                              label: Text(AppLocalizations.of(context)!.chrono),
                               icon: Icon(Icons.access_time),
                             ),
                             ButtonSegment(
                               value: 'random',
-                              label: Text("Aléatoire"),
+                              label: Text(AppLocalizations.of(context)!.random),
                               icon: Icon(Icons.shuffle),
                             ),
                           ],
@@ -128,8 +131,13 @@ class _SortPageState extends State<SortPage>
                         actions: [
                           TextButton(
                             onPressed: () => Navigator.pop(context),
-                            child: const Text(
-                              "Annuler",
+                            style: ButtonStyle(
+                              overlayColor: WidgetStateProperty.all(
+                                Colors.grey.withValues(alpha: 0.2),
+                              ),
+                            ),
+                            child: Text(
+                              AppLocalizations.of(context)!.cancel,
                               style: TextStyle(color: Colors.grey),
                             ),
                           ),
@@ -139,8 +147,13 @@ class _SortPageState extends State<SortPage>
                               await StorageService().saveSortMode(_sortMode);
                               setState(() {});
                             },
+                            style: ButtonStyle(
+                              overlayColor: WidgetStateProperty.all(
+                                Colors.grey.withValues(alpha: 0.2),
+                              ),
+                            ),
                             child: Text(
-                              "Valider",
+                              AppLocalizations.of(context)!.confirm,
                               style: TextStyle(
                                 color: AppColors.text(context),
                                 fontWeight: FontWeight.bold,

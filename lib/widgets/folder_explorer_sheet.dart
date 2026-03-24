@@ -4,6 +4,9 @@ import '../pages/sort_page.dart';
 import '../utils/slide_up_route.dart';
 import '../app_colors.dart';
 
+//Langue
+import '../l10n/app_localizations.dart';
+
 Future<void> openFolderExplorerSheet(
   BuildContext context, {
   required Function(AssetEntity) onTrashPhoto,
@@ -34,10 +37,10 @@ Future<void> openFolderExplorerSheet(
               borderRadius: BorderRadius.circular(10),
             ),
           ),
-          const Padding(
+          Padding(
             padding: EdgeInsets.all(16.0),
             child: Text(
-              "Dossiers de l'appareil",
+              AppLocalizations.of(context)!.deviceFolders,
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
           ),

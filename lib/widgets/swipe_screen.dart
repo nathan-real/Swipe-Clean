@@ -6,6 +6,9 @@ import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import '../widgets/mini_image_preview.dart';
 
+// Langue
+import '../l10n/app_localizations.dart';
+
 class SwipeScreen extends StatefulWidget {
   final Function(AssetEntity) onTrashPhoto;
   final Function(AssetEntity) onRemoveFromTrash;
@@ -313,13 +316,13 @@ class _SwipeScreenState extends State<SwipeScreen> {
                       children: [
                         MiniImagePreview(
                           photo: previousPhoto,
-                          text: "Image suivante",
+                          text: AppLocalizations.of(context)!.nextImage,
                           onDelete: _sendPhotoToTrash,
                         ),
                         const SizedBox(width: 30),
                         MiniImagePreview(
                           photo: nextPhoto,
-                          text: "Image précédente",
+                          text: AppLocalizations.of(context)!.previousImage,
                           onDelete: _sendPhotoToTrash,
                         ),
                       ],

@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:swipe_clean/app_colors.dart';
 
+// Langue
+import '../l10n/app_localizations.dart';
+
 class CustomNavBar extends StatelessWidget {
   final int currentIndex;
   final Function(int) onTap;
@@ -78,13 +81,13 @@ class CustomNavBar extends StatelessWidget {
                     1,
                     Icons.delete_outlined,
                     Icons.delete,
-                    "Corbeille",
+                    AppLocalizations.of(context)!.trash,
                   ),
                   _buildNavItem(
                     2,
                     Icons.settings_outlined,
                     Icons.settings,
-                    "Paramètres",
+                    AppLocalizations.of(context)!.settings,
                   ),
                 ],
               ),

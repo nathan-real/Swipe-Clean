@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
+import 'package:swipe_clean/app_colors.dart';
+
+//Langue
+import '../l10n/app_localizations.dart';
 
 class TrashPage extends StatefulWidget {
   // La page reçoit la liste de l'extérieur + la fonction de suppression
@@ -29,22 +33,44 @@ class _TrashPageState extends State<TrashPage>
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Vider la corbeille ?"),
-          content: const Text(
-            "Ces photos seront définitivement supprimées de votre appareil. Cette action est irréversible.",
+          backgroundColor: AppColors.backgroundNavBar(context),
+          surfaceTintColor: Colors.transparent,
+          title: Text(
+            AppLocalizations.of(context)!.toEmptyTrash,
+            style: TextStyle(
+              color: AppColors.text(context),
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          content: Text(
+            AppLocalizations.of(context)!.deleteWarning,
+            style: TextStyle(color: AppColors.text(context)),
           ),
           actions: [
             TextButton(
               onPressed: () => Navigator.of(context).pop(), // Annuler
-              child: const Text("Annuler"),
+              style: ButtonStyle(
+                overlayColor: WidgetStateProperty.all(
+                  Colors.grey.withValues(alpha: 0.2),
+                ),
+              ),
+              child: Text(
+                AppLocalizations.of(context)!.cancel,
+                style: TextStyle(color: Colors.grey),
+              ),
             ),
             TextButton(
               onPressed: () {
                 Navigator.of(context).pop(); // Ferme la pop-up
                 widget.onEmptyTrash();
               },
-              child: const Text(
-                "Supprimer",
+              style: ButtonStyle(
+                overlayColor: WidgetStateProperty.all(
+                  Colors.red.withValues(alpha: 0.2),
+                ),
+              ),
+              child: Text(
+                AppLocalizations.of(context)!.delete,
                 style: TextStyle(color: Colors.red),
               ),
             ),
@@ -63,14 +89,14 @@ class _TrashPageState extends State<TrashPage>
 
     // Si la liste est vide, on garde l'affichage simple centré
     if (widget.trashedPhotos.isEmpty) {
-      return const Center(
+      return Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
             Icon(Icons.delete_outline, size: 64, color: Colors.grey),
             SizedBox(height: 16),
             Text(
-              "La corbeille est vide",
+              AppLocalizations.of(context)!.emptyTrash,
               style: TextStyle(color: Colors.grey, fontSize: 16),
             ),
           ],
@@ -139,8 +165,8 @@ class _TrashPageState extends State<TrashPage>
               onPressed: _showDeleteConfirmation,
               backgroundColor: Colors.red,
               icon: const Icon(Icons.delete_forever, color: Colors.white),
-              label: const Text(
-                "Tout supprimer",
+              label: Text(
+                AppLocalizations.of(context)!.deleteAll,
                 style: TextStyle(
                   color: Colors.white,
                   fontWeight: FontWeight.bold,
@@ -203,8 +229,8 @@ class FullScreenImagePage extends StatelessWidget {
                 },
                 backgroundColor: Colors.grey,
                 icon: const Icon(Icons.undo, color: Colors.white),
-                label: const Text(
-                  "Enlever de la corbeille",
+                label: Text(
+                  AppLocalizations.of(context)!.removeFromTrash,
                   style: TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,

@@ -2,6 +2,9 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import 'package:swipe_clean/app_colors.dart';
 
+//Langue
+import '../l10n/app_localizations.dart';
+
 class SettingsPage extends StatefulWidget {
   const SettingsPage({super.key});
 
@@ -25,7 +28,7 @@ class _SettingsPageState extends State<SettingsPage> {
     return Scaffold(
       appBar: AppBar(
         title: Text(
-          'Paramètres',
+          AppLocalizations.of(context)!.settings,
           style: TextStyle(color: AppColors.text(context)),
         ),
         backgroundColor: const Color.fromARGB(0, 255, 255, 255),
@@ -38,7 +41,7 @@ class _SettingsPageState extends State<SettingsPage> {
           ListTile(
             contentPadding: const EdgeInsets.only(left: 30.0, right: 30.0),
             leading: const Icon(Icons.dark_mode),
-            title: const Text("Mode Sombre"),
+            title: Text(AppLocalizations.of(context)!.darkmode),
             trailing: Switch(
               // Valeur du switch quand on rentre dans la page
               value: isCurrentlyDark,
