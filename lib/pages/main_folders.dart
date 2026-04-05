@@ -133,13 +133,7 @@ class _MainFoldersState extends State<MainFolders>
               !trashedIds.contains(photo.id);
         }).toList();
 
-        if (filteredPhotos.isNotEmpty) {
-          updatedFolders[year]![month] = filteredPhotos;
-        }
-      }
-
-      if (updatedFolders[year]!.isEmpty) {
-        updatedFolders.remove(year);
+        updatedFolders[year]![month] = filteredPhotos;
       }
     }
 
@@ -340,8 +334,7 @@ class _MainFoldersState extends State<MainFolders>
                                   : sortedCount / totalCount;
 
                               final AssetEntity firstPhoto =
-                                  photosForThisMonth.first;
-
+                                  _masterFoldersMap[year]![month]!.first;
                               // Composant présent dans la place qui s'étend
                               return ListTile(
                                 contentPadding: const EdgeInsets.symmetric(
