@@ -71,5 +71,7 @@
     "restart": "Recommencer",
     "@restart": {},
     "noPhotos": "Aucune photo trouvée ou permission refusée",
-    "@noPhotos": {}
+    "@noPhotos": {},
+    "vibrationSetting": "Vibration au glissement",
+    "@vibrationSetting": {}
 }

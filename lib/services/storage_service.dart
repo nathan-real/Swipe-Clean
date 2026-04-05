@@ -58,4 +58,16 @@ Future<void> resetProcessedPhotos(List<String> idsToRemove) async {
     // On sauvegarde la nouvelle liste
     await prefs.setStringList('processed_photos_ids', currentList);
   }
+
+  // Sauvegarder l'état de la vibration
+  Future<void> setVibrationEnabled(bool isEnabled) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool('vibration_enabled', isEnabled);
+  }
+
+  // Récupérer l'état de la vibration (true par défaut)
+  Future<bool> getVibrationEnabled() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool('vibration_enabled') ?? true;
+  }
 }

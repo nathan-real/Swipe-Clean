@@ -117,4 +117,7 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get noPhotos => 'No photos found or permission denied';
+
+  @override
+  String get vibrationSetting => 'Swipe vibration';
 }

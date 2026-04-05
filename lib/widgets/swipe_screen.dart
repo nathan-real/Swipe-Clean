@@ -5,6 +5,7 @@ import '../app_colors.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import '../widgets/mini_image_preview.dart';
+import 'package:flutter/services.dart';
 
 // Langue
 import '../l10n/app_localizations.dart';
@@ -40,6 +41,8 @@ class _SwipeScreenState extends State<SwipeScreen> {
 
   int _currentCardIndex = 0;
 
+  bool _hapticEnabled = true;
+
   //Garde en mémoire les ID des photos supprimées pendant la session
   final Set<String> _trashedInSession = {};
   @override
@@ -47,6 +50,16 @@ class _SwipeScreenState extends State<SwipeScreen> {
   void initState() {
     super.initState();
     _loadPhotos();
+    _loadHapticSetting();
+  }
+
+  Future<void> _loadHapticSetting() async {
+    bool isEnabled = await StorageService().getVibrationEnabled();
+    if (mounted) {
+      setState(() {
+        _hapticEnabled = isEnabled;
+      });
+    }
   }
 
   @override
@@ -152,12 +165,15 @@ class _SwipeScreenState extends State<SwipeScreen> {
 
                   // CAS 2 : L'utilisateur swipe à droite
                   if (direction == CardSwiperDirection.right) {
+                    if (_hapticEnabled) HapticFeedback.selectionClick();
                     String idToSave = widget.photos[previousIndex].id;
                     StorageService().savePhotoAsProcessed(idToSave);
                     return true;
                   }
                   // CAS 3 : L'utilisateur swipe à gauche
                   else if (direction == CardSwiperDirection.left) {
+                    if (_hapticEnabled) HapticFeedback.selectionClick();
+
                     // On enregistre dans la session qu'elle est supprimée
                     setState(
                       () => _trashedInSession.add(_images[previousIndex].id),

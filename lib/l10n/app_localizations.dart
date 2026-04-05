@@ -313,6 +313,12 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Aucune photo trouvée ou permission refusée'**
   String get noPhotos;
+
+  /// No description provided for @vibrationSetting.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vibration au glissement'**
+  String get vibrationSetting;
 }
 
 class _AppLocalizationsDelegate

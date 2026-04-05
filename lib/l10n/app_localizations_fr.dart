@@ -117,4 +117,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get noPhotos => 'Aucune photo trouvée ou permission refusée';
+
+  @override
+  String get vibrationSetting => 'Vibration au glissement';
 }

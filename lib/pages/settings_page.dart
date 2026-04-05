@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../main.dart';
 import 'package:swipe_clean/app_colors.dart';
+import '../services/storage_service.dart';
 
 //Langue
 import '../l10n/app_localizations.dart';
@@ -14,6 +15,24 @@ class SettingsPage extends StatefulWidget {
 
 // Class state car on a besoin de setState pour l'animation du bouton
 class _SettingsPageState extends State<SettingsPage> {
+  bool _vibrationEnabled = true;
+
+  @override
+  void initState() {
+    super.initState();
+    // On charge le paramètre stocké en mémoire dès l'ouverture de la page
+    _loadVibrationSetting();
+  }
+
+  Future<void> _loadVibrationSetting() async {
+    bool isEnabled = await StorageService().getVibrationEnabled();
+    if (mounted) {
+      setState(() {
+        _vibrationEnabled = isEnabled;
+      });
+    }
+  }
+
   // Méthodes
   //Quand le swith passe à ON il envoit true
   void toggleTheme(bool isDark) {
@@ -38,6 +57,8 @@ class _SettingsPageState extends State<SettingsPage> {
       body: ListView(
         children: [
           const SizedBox(height: 20),
+
+          // Switch du thème
           ListTile(
             contentPadding: const EdgeInsets.only(left: 30.0, right: 30.0),
             leading: const Icon(Icons.dark_mode),
@@ -50,6 +71,29 @@ class _SettingsPageState extends State<SettingsPage> {
                 toggleTheme(val);
                 // On relance le build pour afficher les modifs, donc pas de fonction à mettre
                 setState(() {});
+              },
+              activeThumbColor: Colors.white,
+              activeTrackColor: AppColors.main,
+              inactiveThumbColor: Colors.grey,
+              inactiveTrackColor: Colors.grey.withValues(alpha: 0.3),
+            ),
+          ),
+
+          // Switch Vibration
+          ListTile(
+            contentPadding: const EdgeInsets.only(left: 30.0, right: 30.0),
+            leading: const Icon(Icons.vibration_rounded),
+            title: Text(AppLocalizations.of(context)!.vibrationSetting),
+            trailing: Switch(
+              value: _vibrationEnabled,
+              onChanged: (val) async {
+                // 1. On sauvegarde le choix en mémoire
+                await StorageService().setVibrationEnabled(val);
+
+                // 2. On met à jour l'interface
+                setState(() {
+                  _vibrationEnabled = val;
+                });
               },
               activeThumbColor: Colors.white,
               activeTrackColor: AppColors.main,
