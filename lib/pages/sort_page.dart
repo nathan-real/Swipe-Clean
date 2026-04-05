@@ -27,6 +27,10 @@ class SortPage extends StatefulWidget {
 class _SortPageState extends State<SortPage>
     with AutomaticKeepAliveClientMixin {
   String _sortMode = 'chronological';
+  bool _isReady = false;
+
+  //Une clé unique pour forcer le rechargement du swiper
+  Key _swiperKey = UniqueKey();
 
   List<AssetEntity> _images = [];
 
@@ -36,9 +40,19 @@ class _SortPageState extends State<SortPage>
   @override
   void initState() {
     super.initState();
-    _loadSavedSortMode();
-    // On copie la liste reçue pour pouvoir la manipuler
-    _images = List.from(widget.photosToSort);
+    _loadInitialData();
+  }
+
+  Future<void> _loadInitialData() async {
+    await _loadSavedSortMode();
+    final processedIds = await StorageService().getProcessedPhotoIds();
+
+    setState(() {
+      _images = widget.photosToSort
+          .where((photo) => !processedIds.contains(photo.id))
+          .toList();
+      _isReady = true; // On indique que le filtrage est terminé
+    });
   }
 
   Future<void> _loadSavedSortMode() async {
@@ -56,6 +70,63 @@ class _SortPageState extends State<SortPage>
         title: Text(widget.title),
         foregroundColor: Colors.white,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.restart_alt_rounded),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) => AlertDialog(
+                  backgroundColor: AppColors.backgroundNavBar(context),
+                  surfaceTintColor: Colors.transparent,
+                  title: Text(
+                    AppLocalizations.of(context)!.restartSortTitle,
+                    style: TextStyle(
+                      color: AppColors.text(context),
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  content: Text(
+                    AppLocalizations.of(context)!.restartSortWarning,
+                    style: TextStyle(color: AppColors.text(context)),
+                  ),
+                  actions: [
+                    TextButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: Text(
+                        AppLocalizations.of(context)!.cancel,
+                        style: TextStyle(color: Colors.grey),
+                      ),
+                    ),
+                    TextButton(
+                      onPressed: () async {
+                        Navigator.pop(context);
+                        // On récupère tous les IDs du dossier actuel pour les "oublier"
+                        List<String> idsInFolder = widget.photosToSort
+                            .map((p) => p.id)
+                            .toList();
+                        await StorageService().resetProcessedPhotos(
+                          idsInFolder,
+                        );
+
+                        // On recharge la liste complète
+                        setState(() {
+                          _images = List.from(widget.photosToSort);
+                          _swiperKey = UniqueKey();
+                        });
+                      },
+                      child: Text(
+                        AppLocalizations.of(context)!.restart,
+                        style: TextStyle(
+                          color: Colors.red,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              );
+            },
+          ),
           IconButton(
             icon: const Icon(Icons.sort_rounded),
             onPressed: () {
@@ -170,19 +241,22 @@ class _SortPageState extends State<SortPage>
           ),
         ],
       ),
-      body: Column(
-        children: [
-          // On passe la fonction à notre widget de swipe
-          Expanded(
-            child: SwipeScreen(
-              onTrashPhoto: widget.onTrashPhoto,
-              onRemoveFromTrash: widget.onRemoveFromTrash,
-              sortMode: _sortMode,
-              photos: _images,
+      body: !_isReady
+          ? const Center(child: CircularProgressIndicator())
+          : Column(
+              children: [
+                // On passe la fonction à notre widget de swipe
+                Expanded(
+                  child: SwipeScreen(
+                    key: _swiperKey,
+                    onTrashPhoto: widget.onTrashPhoto,
+                    onRemoveFromTrash: widget.onRemoveFromTrash,
+                    sortMode: _sortMode,
+                    photos: _images,
+                  ),
+                ),
+              ],
             ),
-          ),
-        ],
-      ),
     );
   }
 }

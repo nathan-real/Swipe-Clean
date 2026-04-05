@@ -140,12 +140,6 @@ abstract class AppLocalizations {
   /// **'Dossiers de l\'appareil'**
   String get deviceFolders;
 
-  /// No description provided for @noPhotos.
-  ///
-  /// In fr, this message translates to:
-  /// **'Aucune photo trouvée sur l\'appareil.'**
-  String get noPhotos;
-
   /// No description provided for @photos.
   ///
   /// In fr, this message translates to:
@@ -251,13 +245,13 @@ abstract class AppLocalizations {
   /// No description provided for @previousImage.
   ///
   /// In fr, this message translates to:
-  /// **'Image précédente'**
+  /// **'Image postérieure'**
   String get previousImage;
 
   /// No description provided for @nextImage.
   ///
   /// In fr, this message translates to:
-  /// **'Image suivante'**
+  /// **'Image antérieure'**
   String get nextImage;
 
   /// No description provided for @random.
@@ -295,6 +289,30 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Supprimer'**
   String get delete;
+
+  /// No description provided for @restartSortTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommencer le tri ?'**
+  String get restartSortTitle;
+
+  /// No description provided for @restartSortWarning.
+  ///
+  /// In fr, this message translates to:
+  /// **'Toutes les photos de ce dossier que vous aviez validées réapparaîtront.'**
+  String get restartSortWarning;
+
+  /// No description provided for @restart.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommencer'**
+  String get restart;
+
+  /// No description provided for @noPhotos.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune photo trouvée ou permission refusée'**
+  String get noPhotos;
 }
 
 class _AppLocalizationsDelegate

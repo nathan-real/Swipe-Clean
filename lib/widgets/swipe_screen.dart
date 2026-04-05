@@ -121,9 +121,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
     }
 
     if (_images.isEmpty) {
-      return const Center(
-        child: Text("Aucune photo trouvée ou permission refusée"),
-      );
+      return Center(child: Text(AppLocalizations.of(context)!.noPhotos));
     }
 
     return Scaffold(
@@ -154,6 +152,8 @@ class _SwipeScreenState extends State<SwipeScreen> {
 
                   // CAS 2 : L'utilisateur swipe à droite
                   if (direction == CardSwiperDirection.right) {
+                    String idToSave = widget.photos[previousIndex].id;
+                    StorageService().savePhotoAsProcessed(idToSave);
                     return true;
                   }
                   // CAS 3 : L'utilisateur swipe à gauche

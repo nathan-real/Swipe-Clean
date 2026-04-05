@@ -30,9 +30,6 @@ class AppLocalizationsFr extends AppLocalizations {
   String get deviceFolders => 'Dossiers de l\'appareil';
 
   @override
-  String get noPhotos => 'Aucune photo trouvée sur l\'appareil.';
-
-  @override
   String get photos => 'photos';
 
   @override
@@ -84,10 +81,10 @@ class AppLocalizationsFr extends AppLocalizations {
   String get deleteAll => 'Tout supprimer';
 
   @override
-  String get previousImage => 'Image précédente';
+  String get previousImage => 'Image postérieure';
 
   @override
-  String get nextImage => 'Image suivante';
+  String get nextImage => 'Image antérieure';
 
   @override
   String get random => 'Aléatoire';
@@ -107,4 +104,17 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get delete => 'Supprimer';
+
+  @override
+  String get restartSortTitle => 'Recommencer le tri ?';
+
+  @override
+  String get restartSortWarning =>
+      'Toutes les photos de ce dossier que vous aviez validées réapparaîtront.';
+
+  @override
+  String get restart => 'Recommencer';
+
+  @override
+  String get noPhotos => 'Aucune photo trouvée ou permission refusée';
 }

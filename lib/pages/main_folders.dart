@@ -7,6 +7,7 @@ import 'package:swipe_clean/app_colors.dart';
 import '../services/gallery_service.dart';
 import '../utils/slide_up_route.dart';
 import '../widgets/folder_explorer_sheet.dart';
+import '../services/storage_service.dart';
 
 // Langue
 import '../l10n/app_localizations.dart';
@@ -28,7 +29,9 @@ class MainFolders extends StatefulWidget {
 class _MainFoldersState extends State<MainFolders>
     with AutomaticKeepAliveClientMixin {
   bool _isLoading = true;
-  // Dictionnaire pour ranger les mois par année
+  // La liste intacte avec toutes les photos
+  Map<int, Map<int, List<AssetEntity>>> _masterFoldersMap = {};
+  // La liste filtrée pour l'affichage des compteurs
   Map<int, Map<int, List<AssetEntity>>> _foldersMap = {};
 
   @override
@@ -94,10 +97,8 @@ class _MainFoldersState extends State<MainFolders>
 
         // Met à jour l'interface au fur et à mesure si le widget est toujours affiché
         if (mounted) {
-          setState(() {
-            _foldersMap = finalFolders;
-            _isLoading = false;
-          });
+          _masterFoldersMap = finalFolders;
+          await _refreshFoldersData();
         }
 
         currentOffset += chunkSize;
@@ -112,6 +113,41 @@ class _MainFoldersState extends State<MainFolders>
           _isLoading = false;
         });
       }
+    }
+  }
+
+  // Fonction pour actualiser l'interface instantanément sans recharger la galerie
+  Future<void> _refreshFoldersData() async {
+    final processedIds = await StorageService().getProcessedPhotoIds();
+    final trashedIds = await StorageService().getTrashList();
+
+    Map<int, Map<int, List<AssetEntity>>> updatedFolders = {};
+
+    // On part tjrs de la liste maître
+    for (var year in _masterFoldersMap.keys) {
+      updatedFolders[year] = {};
+
+      for (var month in _masterFoldersMap[year]!.keys) {
+        final filteredPhotos = _masterFoldersMap[year]![month]!.where((photo) {
+          return !processedIds.contains(photo.id) &&
+              !trashedIds.contains(photo.id);
+        }).toList();
+
+        if (filteredPhotos.isNotEmpty) {
+          updatedFolders[year]![month] = filteredPhotos;
+        }
+      }
+
+      if (updatedFolders[year]!.isEmpty) {
+        updatedFolders.remove(year);
+      }
+    }
+
+    if (mounted) {
+      setState(() {
+        _foldersMap = updatedFolders;
+        _isLoading = false;
+      });
     }
   }
 
@@ -141,8 +177,8 @@ class _MainFoldersState extends State<MainFolders>
   void _loadAllPhotos() {
     List<AssetEntity> allPhotos = [];
 
-    for (int year in _foldersMap.keys) {
-      final monthsData = _foldersMap[year]!;
+    for (int year in _masterFoldersMap.keys) {
+      final monthsData = _masterFoldersMap[year]!;
 
       for (int month in monthsData.keys) {
         allPhotos.addAll(monthsData[month]!);
@@ -159,7 +195,9 @@ class _MainFoldersState extends State<MainFolders>
           title: AppLocalizations.of(context)!.allGallery,
         ),
       ),
-    );
+    ).then((_) {
+      _refreshFoldersData();
+    });
   }
 
   @override
@@ -285,10 +323,21 @@ class _MainFoldersState extends State<MainFolders>
                               ),
                             ),
                             children: monthsList.map((month) {
+                              // Les photos restantes (à trier)
                               final photosForThisMonth = monthsData[month]!;
-
-                              final int monthPhotoCount =
+                              final int remainingCount =
                                   photosForThisMonth.length;
+
+                              // Le total d'origine
+                              final int totalCount =
+                                  _masterFoldersMap[year]![month]!.length;
+
+                              // Calculs pour la barre de progression
+                              final int sortedCount =
+                                  totalCount - remainingCount;
+                              final double progress = totalCount == 0
+                                  ? 0.0
+                                  : sortedCount / totalCount;
 
                               final AssetEntity firstPhoto =
                                   photosForThisMonth.first;
@@ -343,12 +392,46 @@ class _MainFoldersState extends State<MainFolders>
                                       ),
                                       // Le compteur de photos
                                       TextSpan(
-                                        text: "  ($monthPhotoCount)",
                                         style: TextStyle(
                                           fontSize: 13,
                                           color: AppColors.text(
                                             context,
                                           ).withValues(alpha: 0.6),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                subtitle: Padding(
+                                  padding: const EdgeInsets.only(top: 8.0),
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: ClipRRect(
+                                          borderRadius: BorderRadius.circular(
+                                            4,
+                                          ),
+                                          child: LinearProgressIndicator(
+                                            value: progress,
+                                            backgroundColor: AppColors.text(
+                                              context,
+                                            ).withValues(alpha: 0.15),
+                                            valueColor:
+                                                AlwaysStoppedAnimation<Color>(
+                                                  AppColors.main,
+                                                ),
+                                            minHeight: 6,
+                                          ),
+                                        ),
+                                      ),
+                                      const SizedBox(width: 10),
+                                      Text(
+                                        "$sortedCount / $totalCount",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          color: AppColors.text(
+                                            context,
+                                          ).withValues(alpha: 0.5),
                                         ),
                                       ),
                                     ],
@@ -360,6 +443,8 @@ class _MainFoldersState extends State<MainFolders>
                                   color: Colors.grey,
                                 ),
                                 onTap: () {
+                                  final fullPhotosForThisMonth =
+                                      _masterFoldersMap[year]![month]!;
                                   Navigator.push(
                                     context,
                                     SlideUpRoute(
@@ -367,12 +452,14 @@ class _MainFoldersState extends State<MainFolders>
                                         onTrashPhoto: widget.onTrashPhoto,
                                         onRemoveFromTrash:
                                             widget.onRemoveFromTrash,
-                                        photosToSort: photosForThisMonth,
+                                        photosToSort: fullPhotosForThisMonth,
                                         title:
                                             "${_getMonthName(context, month)} $year",
                                       ),
                                     ),
-                                  );
+                                  ).then((_) {
+                                    _refreshFoldersData();
+                                  });
                                 },
                               );
                             }).toList(),

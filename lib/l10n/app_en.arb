@@ -7,7 +7,6 @@
     "darkmode": "Dark mode",
     "emptyTrash": "The trash is empty",
     "deviceFolders": "Device folders",
-    "noPhotos": "No photos were found on the device.",
     "photos": "photos",
     "january": "January",
     "february": "February",
@@ -32,5 +31,9 @@
     "sortMode": "Sort mode",
     "deleteWarning": "These photos will be permanently deleted from your device. This action cannot be undone.",
     "removeFromTrash": "Remove from trash",
-    "delete": "Delete"
+    "delete": "Delete",
+    "restartSortTitle": "Restart sorting?",
+    "restartSortWarning": "All the photos in this folder that you validated will reappear.",
+    "restart": "Restart",
+    "noPhotos": "No photos found or permission denied"
 }

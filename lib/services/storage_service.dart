@@ -25,4 +25,37 @@ class StorageService {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getString('sortMode') ?? 'chronological';
   }
+
+  // Récupère la liste des IDs déjà triés
+  Future<Set<String>> getProcessedPhotoIds() async {
+    final prefs = await SharedPreferences.getInstance();
+    List<String>? ids = prefs.getStringList('processed_photos_ids');
+    return ids?.toSet() ?? {};
+  }
+
+  // Ajoute un ID à la liste des photos triées
+  Future<void> savePhotoAsProcessed(String id) async {
+    final prefs = await SharedPreferences.getInstance();
+    Set<String> ids = (prefs.getStringList('processed_photos_ids') ?? [])
+        .toSet();
+
+    if (!ids.contains(id)) {
+      ids.add(id);
+      await prefs.setStringList('processed_photos_ids', ids.toList());
+    }
+  }
+
+  // Supprime les IDs d'une liste spécifique
+Future<void> resetProcessedPhotos(List<String> idsToRemove) async {
+    final prefs = await SharedPreferences.getInstance();
+    // On récupère la liste actuelle
+    List<String> currentList =
+        prefs.getStringList('processed_photos_ids') ?? [];
+
+    // On retire les IDs du dossier
+    currentList.removeWhere((id) => idsToRemove.contains(id));
+
+    // On sauvegarde la nouvelle liste
+    await prefs.setStringList('processed_photos_ids', currentList);
+  }
 }

@@ -30,9 +30,6 @@ class AppLocalizationsEn extends AppLocalizations {
   String get deviceFolders => 'Device folders';
 
   @override
-  String get noPhotos => 'No photos were found on the device.';
-
-  @override
   String get photos => 'photos';
 
   @override
@@ -107,4 +104,17 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get delete => 'Delete';
+
+  @override
+  String get restartSortTitle => 'Restart sorting?';
+
+  @override
+  String get restartSortWarning =>
+      'All the photos in this folder that you validated will reappear.';
+
+  @override
+  String get restart => 'Restart';
+
+  @override
+  String get noPhotos => 'No photos found or permission denied';
 }
