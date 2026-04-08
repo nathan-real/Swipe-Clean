@@ -127,6 +127,67 @@ class _SwipeScreenState extends State<SwipeScreen> {
     });
   }
 
+  // Fonction pour afficher la carte principale en plein écran
+  void _showFullImage(BuildContext context, AssetEntity photo) {
+    showDialog(
+      context: context,
+      barrierColor: Colors.black.withValues(alpha: 0.85),
+      builder: (context) {
+        return Dialog(
+          backgroundColor: Colors.transparent,
+          insetPadding: const EdgeInsets.all(10),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Flexible(
+                child: Stack(
+                  alignment: Alignment.center,
+                  children: [
+                    ClipRRect(
+                      borderRadius: BorderRadius.circular(20),
+                      child: InteractiveViewer(
+                        child: AssetEntityImage(
+                          photo,
+                          isOriginal: true, // Version originale
+                          fit: BoxFit.contain,
+                        ),
+                      ),
+                    ),
+                    Positioned(
+                      top: 10,
+                      right: 10,
+                      child: IconButton(
+                        icon: const Icon(
+                          Icons.close_rounded,
+                          color: Colors.white,
+                          size: 30,
+                        ),
+                        onPressed: () => Navigator.pop(context),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 15),
+              // Le bouton Supprimer
+              FloatingActionButton(
+                onPressed: () {
+                  Navigator.pop(context); //On ferme la pop-up
+                  controller.swipe(
+                    CardSwiperDirection.left,
+                  ); //On déclenche le swipe poubelle
+                },
+                backgroundColor: Colors.red,
+                elevation: 0,
+                child: const Icon(Icons.delete_rounded, color: Colors.white),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -218,19 +279,21 @@ class _SwipeScreenState extends State<SwipeScreen> {
                     overlayColor = Colors.red;
                   }
 
-                  return Container(
-                    // Boite qui fait l'ombre
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(20),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.4),
-                          blurRadius: 15,
-                          offset: const Offset(0, 10),
-                          spreadRadius: 1,
-                        ),
-                      ],
-                    ),
+                  return GestureDetector(
+                    onTap: () => _showFullImage(context, photo),
+                    child: Container(
+                      // Boite qui fait l'ombre
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(20),
+                        boxShadow: [
+                          BoxShadow(
+                            color: Colors.black.withValues(alpha: 0.4),
+                            blurRadius: 15,
+                            offset: const Offset(0, 10),
+                            spreadRadius: 1,
+                          ),
+                        ],
+                      ),
 
                     // Carte en elle même
                     child: ClipRRect(
@@ -256,7 +319,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
                         ],
                       ),
                     ),
-                  );
+                  ));
                 },
               ),
             ),

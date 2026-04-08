@@ -112,15 +112,39 @@ class _HomePageState extends State<HomePage> {
   // Fonction pour vider la corbeille
   Future<void> _emptyTrashPermanently() async {
     if (photosToDelete.isEmpty) return;
+
+    // On prépare un dictionnaire pour retenir la taille de chaque photo avant sa destruction
+    Map<String, int> fileSizes = {};
+
+    for (var photo in photosToDelete) {
+      final file = await photo.file;
+      if (file != null) {
+        // On associe l'ID de la photo à son poids en octets
+        fileSizes[photo.id] = await file.length();
+      }
+    }
+
     // On récupère les ids des photos à supprimer
     List<String> idsToDelete = photosToDelete.map((p) => p.id).toList();
 
-    // On demande au système de les supprimer en récupérant les ids des photos supprimer
+    // On demande au système de les supprimer en récupérant les ids des photos supprimées
     final List<String> successfullyDeletedIds = await PhotoManager.editor
         .deleteWithIds(idsToDelete);
 
     // Si des photos ont bien été supprimées
     if (successfullyDeletedIds.isNotEmpty) {
+      // On calcule la place gagnée
+      int spaceSavedThisSession = 0;
+      for (String id in successfullyDeletedIds) {
+        // On additionne le poids des photos confirmées supprimées
+        spaceSavedThisSession += fileSizes[id] ?? 0;
+      }
+
+      // On sauvegarde ce gain dans la mémoire
+      if (spaceSavedThisSession > 0) {
+        await StorageService().addSavedSpace(spaceSavedThisSession);
+      }
+
       setState(() {
         // On retire de notre liste les photos qui ont vraiment été supprimées
         photosToDelete.removeWhere(

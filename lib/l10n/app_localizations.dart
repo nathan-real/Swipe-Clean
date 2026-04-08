@@ -319,6 +319,12 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Vibration au glissement'**
   String get vibrationSetting;
+
+  /// No description provided for @spaceSaved.
+  ///
+  /// In fr, this message translates to:
+  /// **'Espace libéré'**
+  String get spaceSaved;
 }
 
 class _AppLocalizationsDelegate

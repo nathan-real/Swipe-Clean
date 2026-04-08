@@ -36,5 +36,7 @@
     "restartSortWarning": "All the photos in this folder that you validated will reappear.",
     "restart": "Restart",
     "noPhotos": "No photos found or permission denied",
-    "vibrationSetting": "Swipe vibration"
+    "vibrationSetting": "Swipe vibration",
+    "spaceSaved": "Espace libéré",
+    "@spaceSaved": {}
 }

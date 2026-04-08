@@ -70,4 +70,17 @@ Future<void> resetProcessedPhotos(List<String> idsToRemove) async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool('vibration_enabled') ?? true;
   }
+
+  // Ajouter des octets à l'espace total libéré
+  Future<void> addSavedSpace(int bytesToAdd) async {
+    final prefs = await SharedPreferences.getInstance();
+    int currentSpace = prefs.getInt('saved_space_bytes') ?? 0;
+    await prefs.setInt('saved_space_bytes', currentSpace + bytesToAdd);
+  }
+
+  // Récupérer l'espace total libéré
+  Future<int> getSavedSpace() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getInt('saved_space_bytes') ?? 0;
+  }
 }

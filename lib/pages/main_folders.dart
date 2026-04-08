@@ -44,7 +44,6 @@ class _MainFoldersState extends State<MainFolders>
   }
 
   // Fonction pour charger les dossiers
-  // Fonction pour charger les dossiers
   Future<void> _loadFolders() async {
     const int chunkSize = 2000; // Taille de la tranche
     int currentOffset = 0;

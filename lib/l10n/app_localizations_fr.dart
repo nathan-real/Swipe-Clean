@@ -120,4 +120,7 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get vibrationSetting => 'Vibration au glissement';
+
+  @override
+  String get spaceSaved => 'Espace libéré';
 }

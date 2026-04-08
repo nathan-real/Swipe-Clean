@@ -73,5 +73,7 @@
     "noPhotos": "Aucune photo trouvée ou permission refusée",
     "@noPhotos": {},
     "vibrationSetting": "Vibration au glissement",
-    "@vibrationSetting": {}
+    "@vibrationSetting": {},
+    "spaceSaved": "Espace libéré",
+    "@spaceSaved": {}
 }
