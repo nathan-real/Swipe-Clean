@@ -19,6 +19,8 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  final GlobalKey<MainFoldersState> mainFoldersKey =
+      GlobalKey<MainFoldersState>();
   // Index de la page qu'on veut afficher
   int _currentIndex = 0;
 
@@ -136,6 +138,9 @@ class _HomePageState extends State<HomePage> {
       // On calcule la place gagnée
       int spaceSavedThisSession = 0;
       for (String id in successfullyDeletedIds) {
+        mainFoldersKey.currentState?.removePermanentlyDeletedPhotos(
+          successfullyDeletedIds,
+        );
         // On additionne le poids des photos confirmées supprimées
         spaceSavedThisSession += fileSizes[id] ?? 0;
       }
@@ -183,6 +188,7 @@ class _HomePageState extends State<HomePage> {
             children: [
               // On passe la fonction à MainFolders (qui la passera à SwipeScreen)
               MainFolders(
+                key: mainFoldersKey,
                 onTrashPhoto: _addToTrash,
                 onRemoveFromTrash: _removeFromTrash,
               ),

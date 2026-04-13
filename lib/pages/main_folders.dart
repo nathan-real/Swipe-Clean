@@ -23,10 +23,10 @@ class MainFolders extends StatefulWidget {
   });
 
   @override
-  State<MainFolders> createState() => _MainFoldersState();
+  State<MainFolders> createState() => MainFoldersState();
 }
 
-class _MainFoldersState extends State<MainFolders>
+class MainFoldersState extends State<MainFolders>
     with AutomaticKeepAliveClientMixin {
   bool _isLoading = true;
   // La liste intacte avec toutes les photos
@@ -142,6 +142,20 @@ class _MainFoldersState extends State<MainFolders>
         _isLoading = false;
       });
     }
+  }
+
+  // Fonction pour mettre à jour la liste maître après une suppresion définituve dans la TrashPage
+  void removePermanentlyDeletedPhotos(List<String> deletedIds) {
+    for (var year in _masterFoldersMap.keys) {
+      for (var month in _masterFoldersMap[year]!.keys) {
+        // On retire de la liste maître les photos qui n'existent plus
+        _masterFoldersMap[year]![month]!.removeWhere(
+          (photo) => deletedIds.contains(photo.id),
+        );
+      }
+    }
+    // On force le rafraîchissement visuel
+    _refreshFoldersData();
   }
 
   // Petit outil pour traduire le numéro du mois en texte
