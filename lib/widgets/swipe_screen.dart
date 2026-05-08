@@ -202,8 +202,40 @@ class _SwipeScreenState extends State<SwipeScreen> {
       body: SafeArea(
         child: Column(
           children: [
+            if (_currentCardIndex < _images.length)
+              Padding(
+                padding: const EdgeInsets.only(top: 12.0),
+                child: Builder(
+                  builder: (context) {
+                    final photo = _images[_currentCardIndex];
+                    final date = photo.createDateTime;
+
+                    // Formatage simple de la date (JJ/MM/AAAA)
+                    final dateString =
+                        "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
+                    // Formatage de la résolution
+                    final resolutionString = "${photo.width} x ${photo.height}";
+
+                    return Text(
+                      "$dateString   •   $resolutionString",
+                      style: const TextStyle(
+                        color: Colors.grey,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 14,
+                        letterSpacing: 0.5,
+                      ),
+                    );
+                  },
+                ),
+              ),
             Expanded(
               child: CardSwiper(
+                padding: const EdgeInsets.only(
+                  top: 10.0,
+                  left: 20.0,
+                  right: 20.0,
+                  bottom: 20.0,
+                ),
                 isLoop: false,
                 controller: controller,
                 cardsCount: _images.length,
@@ -295,31 +327,32 @@ class _SwipeScreenState extends State<SwipeScreen> {
                         ],
                       ),
 
-                    // Carte en elle même
-                    child: ClipRRect(
-                      borderRadius: BorderRadius.circular(20),
-                      child: Stack(
-                        fit: StackFit.expand,
-                        children: [
-                          Container(color: AppColors.main),
+                      // Carte en elle même
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(20),
+                        child: Stack(
+                          fit: StackFit.expand,
+                          children: [
+                            Container(color: AppColors.main),
 
-                          // La photo
-                          AssetEntityImage(
-                            photo,
-                            isOriginal: false,
-                            thumbnailSize: const ThumbnailSize.square(1024),
+                            // La photo
+                            AssetEntityImage(
+                              photo,
+                              isOriginal: false,
+                              thumbnailSize: const ThumbnailSize.square(1024),
 
-                            fit: BoxFit.contain,
-                          ),
+                              fit: BoxFit.contain,
+                            ),
 
-                          Container(
-                            // Calque pour afficher de la couleur au desssus
-                            color: overlayColor.withValues(alpha: opacity),
-                          ),
-                        ],
+                            Container(
+                              // Calque pour afficher de la couleur au desssus
+                              color: overlayColor.withValues(alpha: opacity),
+                            ),
+                          ],
+                        ),
                       ),
                     ),
-                  ));
+                  );
                 },
               ),
             ),
