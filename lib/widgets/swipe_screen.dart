@@ -4,7 +4,6 @@ import 'package:swipe_clean/services/storage_service.dart';
 import '../app_colors.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
-import '../widgets/mini_image_preview.dart';
 import 'package:flutter/services.dart';
 
 // Langue
@@ -43,12 +42,16 @@ class _SwipeScreenState extends State<SwipeScreen> {
 
   bool _hapticEnabled = true;
 
+  // Nouveau contrôleur pour la pellicule du bas
+  late PageController _filmstripController;
+
   //Garde en mémoire les ID des photos supprimées pendant la session
   final Set<String> _trashedInSession = {};
   @override
   // On load les photos à l'initialisation
   void initState() {
     super.initState();
+    _filmstripController = PageController(viewportFraction: 0.15);
     _loadPhotos();
     _loadHapticSetting();
   }
@@ -66,6 +69,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
   void dispose() {
     controller.dispose();
     super.dispose();
+    _filmstripController.dispose();
   }
 
   @override
@@ -108,22 +112,21 @@ class _SwipeScreenState extends State<SwipeScreen> {
     _applySorting();
   }
 
-  // Fonction appelée depuis la pop-up pour mettre à la corbeille
-  void _sendPhotoToTrash(AssetEntity photo) {
-    // Ici on met vraiment la photo dans la corbeille
-    widget.onTrashPhoto(photo);
-
-    // On l'ajoute à notre mémoire locale pour que l'interface s'adapte
+  // Fonction appelée quand on sélectionne une photo dans la pellicule du bas
+  void _injectPhotoIntoSwiper(AssetEntity selectedPhoto) {
     setState(() {
-      _trashedInSession.add(photo.id);
+      // 1. On vérifie si la photo est déjà dans la suite de la pile
+      int existingIndex = _images.indexWhere(
+        (img) => img.id == selectedPhoto.id,
+      );
 
-      // On cherche la photo dans la liste du swiper
-      int targetIndex = _images.indexOf(photo);
-
-      // Si la photo est "dans le futur", on la supprime de la liste. Le swiper la sautera automatiquement
-      if (targetIndex != -1 && targetIndex > _currentCardIndex) {
-        _images.removeAt(targetIndex);
+      if (existingIndex != -1 && existingIndex > _currentCardIndex) {
+        // Si elle est plus loin dans la pile, on la retire de son emplacement futur
+        _images.removeAt(existingIndex);
       }
+
+      // 2. On l'écrase à la position actuelle du swiper pour qu'elle s'affiche immédiatement
+      _images[_currentCardIndex] = selectedPhoto;
     });
   }
 
@@ -172,10 +175,23 @@ class _SwipeScreenState extends State<SwipeScreen> {
               // Le bouton Supprimer
               FloatingActionButton(
                 onPressed: () {
-                  Navigator.pop(context); //On ferme la pop-up
-                  controller.swipe(
-                    CardSwiperDirection.left,
-                  ); //On déclenche le swipe poubelle
+                  Navigator.pop(context); // On ferme la pop-up
+
+                  // On vérifie si la photo affichée en grand est celle du swiper actuel
+                  if (photo.id == _images[_currentCardIndex].id) {
+                    // C'est la carte principale, on déclenche l'animation visuelle
+                    controller.swipe(CardSwiperDirection.left);
+                  } else {
+                    // C'est une photo de la pellicule du bas !
+                    widget.onTrashPhoto(photo); // On l'envoie à la corbeille
+
+                    setState(() {
+                      // On la met dans la liste noire de la session
+                      _trashedInSession.add(photo.id);
+                      // On la retire de la file d'attente du swiper pour ne pas tomber dessus plus tard
+                      _images.removeWhere((img) => img.id == photo.id);
+                    });
+                  }
                 },
                 backgroundColor: Colors.red,
                 elevation: 0,
@@ -284,18 +300,26 @@ class _SwipeScreenState extends State<SwipeScreen> {
                       int currentIndex,
                       CardSwiperDirection direction,
                     ) {
+                      final restoredPhoto = _images[currentIndex];
+
                       // Si la carte précédente avait été glissée à gauche (vers la corbeille)
                       if (direction == CardSwiperDirection.left) {
-                        // On la retire de la liste de la corbeille
-                        widget.onRemoveFromTrash(_images[currentIndex]);
+                        widget.onRemoveFromTrash(restoredPhoto);
+
+                        // --- NOUVEAU : On ressuscite la photo pour la pellicule du bas ---
+                        setState(() {
+                          _trashedInSession.remove(restoredPhoto.id);
+                        });
                       }
 
-                      // On met aussi à jour l'index de la carte actuelle
+                      // On met à jour l'index du Swiper principal
                       setState(() {
                         _currentCardIndex = currentIndex;
                       });
-                      return true; // On autorise l'animation de retour
+
+                      return true;
                     },
+
                 cardBuilder: (context, index, x, y) {
                   final photo = _images[index];
                   final double dragPourcentage =
@@ -388,58 +412,110 @@ class _SwipeScreenState extends State<SwipeScreen> {
                 ],
               ),
             ),
-
+            // --- NOUVEAU BLOC : La Pellicule Magnétique ---
             if (_currentCardIndex < _images.length)
               Padding(
-                padding: const EdgeInsets.only(bottom: 30),
-                child: Builder(
-                  builder: (context) {
-                    final currentPhoto = _images[_currentCardIndex];
+                padding: const EdgeInsets.only(bottom: 20),
+                child: SizedBox(
+                  height: 80,
+                  child: Builder(
+                    builder: (context) {
+                      final currentPhoto = _images[_currentCardIndex];
 
-                    //On crée une liste qui exclut les photos supprimées dans la session
-                    final validChronoImages = _chronologicalImages
-                        .where((img) => !_trashedInSession.contains(img.id))
-                        .toList();
+                      // On prend toute la chronologie valide
+                      final validChronoImages = _chronologicalImages
+                          .where((img) => !_trashedInSession.contains(img.id))
+                          .toList();
 
-                    // On cherche la position de la photo actuelle dans cette liste propre
-                    final chronoIndex = validChronoImages.indexWhere(
-                      (img) => img.id == currentPhoto.id,
-                    );
+                      final chronoIndex = validChronoImages.indexWhere(
+                        (img) => img.id == currentPhoto.id,
+                      );
 
-                    AssetEntity? nextPhoto;
-                    AssetEntity? previousPhoto;
+                      // SYNCHRONISATION : Si on swipe la grande carte, la pellicule s'aligne automatiquement
+                      WidgetsBinding.instance.addPostFrameCallback((_) {
+                        if (_filmstripController.hasClients) {
+                          int currentPage =
+                              _filmstripController.page?.round() ?? 0;
 
-                    //On prend les voisines
-                    if (chronoIndex != -1) {
-                      // S'il y a des photos avant dans la liste (donc plus récentes)
-                      if (chronoIndex > 0) {
-                        previousPhoto = validChronoImages[chronoIndex - 1];
-                      }
+                          if (currentPage != chronoIndex) {
+                            // On calcule l'écart entre la position actuelle et la destination
+                            int distance = (currentPage - chronoIndex).abs();
 
-                      // S'il y a des photos après dans la liste (donc plus anciennes)
-                      if (chronoIndex < validChronoImages.length - 1) {
-                        nextPhoto = validChronoImages[chronoIndex + 1];
-                      }
-                    }
+                            if (distance > 3) {
+                              // Mode aléatoire ou grand saut : on téléporte sans animation pour préserver les performances
+                              _filmstripController.jumpToPage(chronoIndex);
+                            } else {
+                              // Mode chronologique (déplacement de 1 ou 2 photos) : on glisse en douceur
+                              _filmstripController.animateToPage(
+                                chronoIndex,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeOut,
+                              );
+                            }
+                          }
+                        }
+                      });
 
-                    return Row(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        MiniImagePreview(
-                          photo: previousPhoto,
-                          text: AppLocalizations.of(context)!.nextImage,
-                          onDelete: _sendPhotoToTrash,
-                        ),
-                        const SizedBox(width: 30),
-                        MiniImagePreview(
-                          photo: nextPhoto,
-                          text: AppLocalizations.of(context)!.previousImage,
-                          onDelete: _sendPhotoToTrash,
-                        ),
-                      ],
-                    );
-                  },
+                      return PageView.builder(
+                        controller: _filmstripController,
+                        itemCount: validChronoImages.length,
+                        // Le magnétisme est natif au PageView !
+                        // Quand l'utilisateur s'arrête de slider sur une photo, ça déclenche ceci :
+                        onPageChanged: (index) {
+                          // On injecte la photo sélectionnée au premier plan du swiper
+                          _injectPhotoIntoSwiper(validChronoImages[index]);
+                          // Petit retour haptique pour la sensation de "cran" magnétique
+                          if (_hapticEnabled) HapticFeedback.selectionClick();
+                        },
+                        itemBuilder: (context, index) {
+                          final photo = validChronoImages[index];
+                          final isCurrent = index == chronoIndex;
+
+                          return GestureDetector(
+                            onTap: isCurrent
+                                ? null
+                                : () => _showFullImage(context, photo),
+                            child: AnimatedContainer(
+                              duration: const Duration(milliseconds: 250),
+                              // L'image centrale est plus grande
+                              margin: EdgeInsets.symmetric(
+                                horizontal: 4,
+                                vertical: isCurrent ? 0 : 10,
+                              ),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                border: isCurrent
+                                    ? Border.all(
+                                        color: AppColors.main,
+                                        width: 3,
+                                      )
+                                    : null,
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(
+                                  isCurrent ? 9 : 12,
+                                ),
+                                child: AssetEntityImage(
+                                  photo,
+                                  isOriginal: false,
+                                  thumbnailSize: const ThumbnailSize.square(
+                                    150,
+                                  ),
+                                  fit: BoxFit.cover,
+                                  color: isCurrent
+                                      ? null
+                                      : Colors.black.withValues(alpha: 0.5),
+                                  colorBlendMode: isCurrent
+                                      ? null
+                                      : BlendMode.darken,
+                                ),
+                              ),
+                            ),
+                          );
+                        },
+                      );
+                    },
+                  ),
                 ),
               ),
           ],
