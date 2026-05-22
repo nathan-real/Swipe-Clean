@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'pages/home_page.dart';
 import 'app_colors.dart';
 import 'package:flutter/services.dart';
+import '../services/storage_service.dart';
+
 
 //Langue
 import 'l10n/app_localizations.dart';
@@ -9,9 +11,14 @@ import 'l10n/app_localizations.dart';
 // Variable global pour le thème
 final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
 
-void main() {
+void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   SystemChrome.setEnabledSystemUIMode(SystemUiMode.edgeToEdge);
+  // On lit la préférence stockée
+  bool isDark = await StorageService().getThemeMode();
+
+  // On met à jour le notifier global AVANT de lancer l'app
+  themeNotifier.value = isDark ? ThemeMode.dark : ThemeMode.light;
 
   // On impose les orientations autorisées
   SystemChrome.setPreferredOrientations([

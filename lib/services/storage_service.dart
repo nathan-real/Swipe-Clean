@@ -46,7 +46,7 @@ class StorageService {
   }
 
   // Supprime les IDs d'une liste spécifique
-Future<void> resetProcessedPhotos(List<String> idsToRemove) async {
+  Future<void> resetProcessedPhotos(List<String> idsToRemove) async {
     final prefs = await SharedPreferences.getInstance();
     // On récupère la liste actuelle
     List<String> currentList =
@@ -82,5 +82,20 @@ Future<void> resetProcessedPhotos(List<String> idsToRemove) async {
   Future<int> getSavedSpace() async {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getInt('saved_space_bytes') ?? 0;
+  }
+
+// Clé pour SharedPreferences
+  static const String _themeKey = 'is_dark_mode';
+
+  // Sauvegarder le choix du thème
+  Future<void> saveThemeMode(bool isDarkMode) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setBool(_themeKey, isDarkMode);
+  }
+
+  // Lire le choix (par défaut true = mode sombre)
+  Future<bool> getThemeMode() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getBool(_themeKey) ?? true;
   }
 }

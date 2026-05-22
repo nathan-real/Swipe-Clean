@@ -44,6 +44,7 @@ class _SettingsPageState extends State<SettingsPage> {
   //Quand le swith passe à ON il envoit true
   void toggleTheme(bool isDark) {
     themeNotifier.value = isDark ? ThemeMode.dark : ThemeMode.light;
+    StorageService().saveThemeMode(isDark);
   }
 
   String _formatBytes(int bytes) {

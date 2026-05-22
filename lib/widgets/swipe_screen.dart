@@ -275,7 +275,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
                   // CAS 2 : L'utilisateur swipe à droite
                   if (direction == CardSwiperDirection.right) {
                     if (_hapticEnabled) HapticFeedback.selectionClick();
-                    String idToSave = widget.photos[previousIndex].id;
+                    String idToSave = _images[previousIndex].id;
                     StorageService().savePhotoAsProcessed(idToSave);
                     return true;
                   }
