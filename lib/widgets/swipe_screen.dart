@@ -47,6 +47,8 @@ class _SwipeScreenState extends State<SwipeScreen> {
 
   //Garde en mémoire les ID des photos supprimées pendant la session
   final Set<String> _trashedInSession = {};
+  // Garde en mémoire les ID des photos conservées (swipe droit)
+  final Set<String> _keptInSession = {};
   @override
   // On load les photos à l'initialisation
   void initState() {
@@ -277,6 +279,12 @@ class _SwipeScreenState extends State<SwipeScreen> {
                     if (_hapticEnabled) HapticFeedback.selectionClick();
                     String idToSave = _images[previousIndex].id;
                     StorageService().savePhotoAsProcessed(idToSave);
+
+                    // On cache l'image de la pellicule
+                    setState(() {
+                      _keptInSession.add(idToSave);
+                    });
+
                     return true;
                   }
                   // CAS 3 : L'utilisateur swipe à gauche
@@ -294,31 +302,32 @@ class _SwipeScreenState extends State<SwipeScreen> {
                   return false;
                 },
 
-                onUndo:
-                    (
-                      int? previousIndex,
-                      int currentIndex,
-                      CardSwiperDirection direction,
-                    ) {
-                      final restoredPhoto = _images[currentIndex];
+                onUndo: (previousIndex, currentIndex, direction) {
+                  final restoredPhoto = _images[currentIndex];
 
-                      // Si la carte précédente avait été glissée à gauche (vers la corbeille)
-                      if (direction == CardSwiperDirection.left) {
-                        widget.onRemoveFromTrash(restoredPhoto);
+                  // Si la carte précédente avait été glissée à gauche (vers la corbeille)
+                  if (direction == CardSwiperDirection.left) {
+                    widget.onRemoveFromTrash(restoredPhoto);
+                    setState(() {
+                      _trashedInSession.remove(restoredPhoto.id);
+                    });
+                  }
+                  // --- NOUVEAU : Si la carte avait été glissée à droite (conservée) ---
+                  else if (direction == CardSwiperDirection.right) {
+                    setState(() {
+                      _keptInSession.remove(restoredPhoto.id);
+                    });
+                    // Note : Si tu as une fonction StorageService().removePhotoFromProcessed(id),
+                    // c'est le bon endroit pour l'appeler afin d'annuler aussi la sauvegarde en dur.
+                  }
 
-                        // --- NOUVEAU : On ressuscite la photo pour la pellicule du bas ---
-                        setState(() {
-                          _trashedInSession.remove(restoredPhoto.id);
-                        });
-                      }
+                  // On met à jour l'index du Swiper principal
+                  setState(() {
+                    _currentCardIndex = currentIndex;
+                  });
 
-                      // On met à jour l'index du Swiper principal
-                      setState(() {
-                        _currentCardIndex = currentIndex;
-                      });
-
-                      return true;
-                    },
+                  return true;
+                },
 
                 cardBuilder: (context, index, x, y) {
                   final photo = _images[index];
@@ -424,7 +433,11 @@ class _SwipeScreenState extends State<SwipeScreen> {
 
                       // On prend toute la chronologie valide
                       final validChronoImages = _chronologicalImages
-                          .where((img) => !_trashedInSession.contains(img.id))
+                          .where(
+                            (img) =>
+                                !_trashedInSession.contains(img.id) &&
+                                !_keptInSession.contains(img.id),
+                          ) // <-- NOUVEAU FILTRE ICI
                           .toList();
 
                       final chronoIndex = validChronoImages.indexWhere(
