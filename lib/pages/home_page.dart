@@ -206,7 +206,19 @@ class _HomePageState extends State<HomePage> {
 
           // COUCHE 2 : La nav bar
           // On lui passe la foncitionn pour passer d'une page à l'autre
-          CustomNavBar(currentIndex: _currentIndex, onTap: _onItemTapped),
+          Positioned(
+            bottom: 20, // Ancré tout en bas
+            left: 0,
+            right: 0,
+            child: SafeArea(
+              // Le SafeArea va naturellement repousser la barre vers le haut
+              // juste ce qu'il faut pour ne pas toucher les boutons système
+              child: CustomNavBar(
+                currentIndex: _currentIndex,
+                onTap: _onItemTapped,
+              ),
+            ),
+          ),
         ],
       ),
     );

@@ -4,7 +4,6 @@ import 'app_colors.dart';
 import 'package:flutter/services.dart';
 import '../services/storage_service.dart';
 
-
 //Langue
 import 'l10n/app_localizations.dart';
 

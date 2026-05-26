@@ -57,6 +57,8 @@ class MainFoldersState extends State<MainFolders>
     int currentOffset = 0;
     bool hasMore = true;
     Map<int, Map<int, List<AssetEntity>>> tempFolders = {};
+    await PhotoManager.clearFileCache();
+    PhotoManager.releaseCache();
 
     try {
       while (hasMore) {

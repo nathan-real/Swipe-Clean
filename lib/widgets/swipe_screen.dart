@@ -437,7 +437,7 @@ class _SwipeScreenState extends State<SwipeScreen> {
                             (img) =>
                                 !_trashedInSession.contains(img.id) &&
                                 !_keptInSession.contains(img.id),
-                          ) // <-- NOUVEAU FILTRE ICI
+                          )
                           .toList();
 
                       final chronoIndex = validChronoImages.indexWhere(

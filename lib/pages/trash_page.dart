@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
-import 'package:swipe_clean/app_colors.dart';
 
 //Langue
 import '../l10n/app_localizations.dart';
@@ -26,59 +25,6 @@ class TrashPage extends StatefulWidget {
 class _TrashPageState extends State<TrashPage>
     with AutomaticKeepAliveClientMixin {
   // Permet de garder la position du scroll quand on change d'onglet
-
-  // Fonction qui permet d'envoyer la notif system de supression définitive des photos
-  void _showDeleteConfirmation() {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          backgroundColor: AppColors.backgroundNavBar(context),
-          surfaceTintColor: Colors.transparent,
-          title: Text(
-            AppLocalizations.of(context)!.toEmptyTrash,
-            style: TextStyle(
-              color: AppColors.text(context),
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          content: Text(
-            AppLocalizations.of(context)!.deleteWarning,
-            style: TextStyle(color: AppColors.text(context)),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.of(context).pop(), // Annuler
-              style: ButtonStyle(
-                overlayColor: WidgetStateProperty.all(
-                  Colors.grey.withValues(alpha: 0.2),
-                ),
-              ),
-              child: Text(
-                AppLocalizations.of(context)!.cancel,
-                style: TextStyle(color: Colors.grey),
-              ),
-            ),
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop(); // Ferme la pop-up
-                widget.onEmptyTrash();
-              },
-              style: ButtonStyle(
-                overlayColor: WidgetStateProperty.all(
-                  Colors.red.withValues(alpha: 0.2),
-                ),
-              ),
-              child: Text(
-                AppLocalizations.of(context)!.delete,
-                style: TextStyle(color: Colors.red),
-              ),
-            ),
-          ],
-        );
-      },
-    );
-  }
 
   @override
   bool get wantKeepAlive => true;
@@ -157,12 +103,14 @@ class _TrashPageState extends State<TrashPage>
 
         // COUCHE 2 : Le bouton flottant
         Positioned(
-          bottom: 120.0,
+          bottom: 150.0,
           left: 0,
           right: 0,
           child: Center(
             child: FloatingActionButton.extended(
-              onPressed: _showDeleteConfirmation,
+              onPressed: () {
+                widget.onEmptyTrash();
+              },
               backgroundColor: Colors.red,
               icon: const Icon(Icons.delete_forever, color: Colors.white),
               label: Text(
