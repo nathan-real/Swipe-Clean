@@ -8,6 +8,7 @@ import '../services/gallery_service.dart';
 import '../utils/slide_up_route.dart';
 import '../widgets/folder_explorer_sheet.dart';
 import '../services/storage_service.dart';
+import 'dart:async';
 
 // Langue
 import '../l10n/app_localizations.dart';
@@ -29,6 +30,7 @@ class MainFolders extends StatefulWidget {
 class MainFoldersState extends State<MainFolders>
     with AutomaticKeepAliveClientMixin {
   bool _isLoading = true;
+  Timer? _permissionTimer;
   // La liste intacte avec toutes les photos
   Map<int, Map<int, List<AssetEntity>>> _masterFoldersMap = {};
   // La liste filtrée pour l'affichage des compteurs
@@ -41,6 +43,12 @@ class MainFoldersState extends State<MainFolders>
   void initState() {
     super.initState();
     _loadFolders();
+  }
+
+  @override
+  void dispose() {
+    _permissionTimer?.cancel();
+    super.dispose();
   }
 
   // Fonction pour charger les dossiers
@@ -251,7 +259,67 @@ class MainFoldersState extends State<MainFolders>
           child: _isLoading
               ? const Center(child: CircularProgressIndicator())
               : _foldersMap.isEmpty
-              ? Center(child: Text(AppLocalizations.of(context)!.noPhotos))
+              ? Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(AppLocalizations.of(context)!.noPhotos),
+                      const SizedBox(height: 20),
+                      ElevatedButton.icon(
+                        onPressed: () async {
+                          final permission =
+                              await PhotoManager.requestPermissionExtend(
+                                requestOption: const PermissionRequestOption(),
+                              );
+
+                          //  On accepte l'accès total ET l'accès limité
+                          if (permission.isAuth ||
+                              permission == PermissionState.limited) {
+                            setState(() => _isLoading = true);
+                            _loadFolders();
+                          } else {
+                            // On annule tout ancien timer
+                            _permissionTimer?.cancel();
+
+                            _permissionTimer = Timer.periodic(
+                              const Duration(seconds: 1),
+                              (timer) async {
+                                final check =
+                                    await PhotoManager.requestPermissionExtend(
+                                      requestOption:
+                                          const PermissionRequestOption(),
+                                    );
+
+                                if (check.isAuth ||
+                                    check == PermissionState.limited) {
+                                  timer.cancel(); // On coupe le chronomètre
+
+                                  if (mounted) {
+                                    setState(() => _isLoading = true);
+                                    _loadFolders(); // On charge les photos
+                                  }
+                                }
+                              },
+                            );
+
+                            // Ouvre les paramètres
+                            PhotoManager.openSetting();
+                          }
+                        },
+                        icon: const Icon(Icons.folder_shared_rounded),
+                        label: const Text("Autoriser l'accès aux fichiers"),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.main,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                )
               : ListView.builder(
                   padding: const EdgeInsets.only(bottom: 120),
                   itemCount: _foldersMap.length,
