@@ -21,78 +21,73 @@ class CustomNavBar extends StatelessWidget {
     const double stroke = 5;
     const double pillHeight = 65;
 
-    return Positioned(
-      bottom: 30, // détaché du bas
-      left: 0,
-      right: 0,
-      child: Center(
-        child: Container(
-          width: navBarWidth,
-          height: pillHeight,
-          decoration: BoxDecoration(
-            color: isDarkMode
-                ? AppColors.backgroundNavBar(context)
-                : Colors.white,
-            borderRadius: BorderRadius.circular(35),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withValues(
-                  alpha: isDarkMode ? 0.5 : 0.25,
-                ), // Ombre  A AJOUTER DANS COLORS
-                blurRadius: 20,
-                offset: const Offset(0, 5),
-              ),
-            ],
-          ),
-          child: Stack(
-            children: [
-              AnimatedPositioned(
-                duration: const Duration(milliseconds: 250),
-                curve: Curves.easeOut,
-                left: (navBarWidth / 3) * currentIndex + stroke,
+    return Center(
+      child: Container(
+        width: navBarWidth,
+        height: pillHeight,
+        decoration: BoxDecoration(
+          color: isDarkMode
+              ? AppColors.backgroundNavBar(context)
+              : Colors.white,
+          borderRadius: BorderRadius.circular(35),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withValues(
+                alpha: isDarkMode ? 0.5 : 0.25,
+              ), // Ombre  A AJOUTER DANS COLORS
+              blurRadius: 20,
+              offset: const Offset(0, 5),
+            ),
+          ],
+        ),
+        child: Stack(
+          children: [
+            AnimatedPositioned(
+              duration: const Duration(milliseconds: 250),
+              curve: Curves.easeOut,
+              left: (navBarWidth / 3) * currentIndex + stroke,
 
-                top: 0,
-                bottom: 0,
-                width: navBarWidth / 3 - stroke * 2,
+              top: 0,
+              bottom: 0,
+              width: navBarWidth / 3 - stroke * 2,
 
-                child: Center(
-                  // Pillule
-                  child: Container(
-                    width: navBarWidth / 3 - stroke * 2,
-                    height: pillHeight - stroke * 2,
-                    decoration: BoxDecoration(
-                      color: AppColors.main,
-                      borderRadius: BorderRadius.circular(35),
-                    ),
+              child: Center(
+                // Pillule
+                child: Container(
+                  width: navBarWidth / 3 - stroke * 2,
+                  height: pillHeight - stroke * 2,
+                  decoration: BoxDecoration(
+                    color: AppColors.main,
+                    borderRadius: BorderRadius.circular(35),
                   ),
                 ),
               ),
+            ),
 
-              // Icons
-              Row(
-                children: [
-                  _buildNavItem(
-                    0,
-                    Icons.folder_copy_outlined,
-                    Icons.folder,
-                    "Swipe",
-                  ),
-                  _buildNavItem(
-                    1,
-                    Icons.delete_outlined,
-                    Icons.delete,
-                    AppLocalizations.of(context)!.trash,
-                  ),
-                  _buildNavItem(
-                    2,
-                    Icons.settings_outlined,
-                    Icons.settings,
-                    AppLocalizations.of(context)!.settings,
-                  ),
-                ],
-              ),
-            ],
-          ),
+            // Icons
+            Row(
+              children: [
+                _buildNavItem(
+                  0,
+                  Icons.folder_copy_outlined,
+                  Icons.folder,
+                  "Swipe",
+                ),
+                _buildNavItem(
+                  1,
+                  Icons.delete_outlined,
+                  Icons.delete,
+                  AppLocalizations.of(context)!.trash,
+                ),
+                _buildNavItem(
+                  2,
+                  Icons.settings_outlined,
+                  Icons.settings,
+                  AppLocalizations.of(context)!.settings,
+                ),
+              ],
+            ),
+          ],
         ),
       ),
     );
