@@ -37,6 +37,6 @@
     "restart": "Restart",
     "noPhotos": "No photos found or permission denied",
     "vibrationSetting": "Swipe vibration",
-    "spaceSaved": "Espace libéré",
+    "spaceSaved": "Space saved",
     "@spaceSaved": {}
 }
