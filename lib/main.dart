@@ -8,7 +8,7 @@ import '../services/storage_service.dart';
 import 'l10n/app_localizations.dart';
 
 // Variable global pour le thème
-final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.system);
+final ValueNotifier<ThemeMode> themeNotifier = ValueNotifier(ThemeMode.light);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();

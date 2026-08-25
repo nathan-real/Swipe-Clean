@@ -84,7 +84,7 @@ class StorageService {
     return prefs.getInt('saved_space_bytes') ?? 0;
   }
 
-// Clé pour SharedPreferences
+  // Clé pour SharedPreferences
   static const String _themeKey = 'is_dark_mode';
 
   // Sauvegarder le choix du thème
@@ -96,6 +96,6 @@ class StorageService {
   // Lire le choix (par défaut true = mode sombre)
   Future<bool> getThemeMode() async {
     final prefs = await SharedPreferences.getInstance();
-    return prefs.getBool(_themeKey) ?? true;
+    return prefs.getBool(_themeKey) ?? false;
   }
 }

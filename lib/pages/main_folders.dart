@@ -111,6 +111,7 @@ class MainFoldersState extends State<MainFolders>
         }
 
         currentOffset += chunkSize;
+        await Future.delayed(const Duration(milliseconds: 50));
       }
     } catch (e) {
       debugPrint("Erreur lors du chargement des dossiers : $e");
@@ -271,7 +272,12 @@ class MainFoldersState extends State<MainFolders>
                         onPressed: () async {
                           final permission =
                               await PhotoManager.requestPermissionExtend(
-                                requestOption: const PermissionRequestOption(),
+                                requestOption: const PermissionRequestOption(
+                                  androidPermission: AndroidPermission(
+                                    type: RequestType.image,
+                                    mediaLocation: false,
+                                  ),
+                                ),
                               );
 
                           //  On accepte l'accès total ET l'accès limité
@@ -289,7 +295,13 @@ class MainFoldersState extends State<MainFolders>
                                 final check =
                                     await PhotoManager.requestPermissionExtend(
                                       requestOption:
-                                          const PermissionRequestOption(),
+                                          const PermissionRequestOption(
+                                            androidPermission:
+                                                AndroidPermission(
+                                                  type: RequestType.image,
+                                                  mediaLocation: false,
+                                                ),
+                                          ),
                                     );
 
                                 if (check.isAuth ||
