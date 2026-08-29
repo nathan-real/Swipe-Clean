@@ -1,7 +1,7 @@
 # Swipe Clean
 
 [![Available on Google Play](https://img.shields.io/badge/Google_Play-414141?style=for-the-badge&logo=google-play&logoColor=white)](https://play.google.com/store/apps/details?id=com.kubbycubs.swipe_clean)
-[![Download APK](https://img.shields.io/badge/GitHub-Download_APK-blue?style=for-the-badge&logo=github)]()
+[![Download APK](https://img.shields.io/badge/GitHub-Download_APK-blue?style=for-the-badge&logo=github)](https://github.com/nathan-real/Swipe-Clean/releases/tag/0.9.6)
 
 ## The problem solved
 
@@ -26,5 +26,5 @@ The application is built with the Flutter framework and the Dart programming lan
 
 The application is officially available for Android devices.
 
-[Download Swipe Clean on the Google Play Store](URL_TON_APP_PLAYSTORE)
-[Download the latest APK on GitHub](URL_DE_TA_RELEASE_GITHUB)
+[Download Swipe Clean on the Google Play Store](https://play.google.com/store/apps/details?id=com.kubbycubs.swipe_clean)
+[Download the latest APK on GitHub](https://github.com/nathan-real/Swipe-Clean/releases/tag/0.9.6)
