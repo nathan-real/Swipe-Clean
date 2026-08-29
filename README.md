@@ -1,53 +1,30 @@
 # Swipe Clean
 
-Une application Flutter intuitive permettant de trier, nettoyer et organiser la galerie photo de son téléphone grâce à un système de balayage (swipe) fluide.
+[![Available on Google Play](https://img.shields.io/badge/Google_Play-414141?style=for-the-badge&logo=google-play&logoColor=white)](https://play.google.com/store/apps/details?id=com.kubbycubs.swipe_clean)
+[![Download APK](https://img.shields.io/badge/GitHub-Download_APK-blue?style=for-the-badge&logo=github)]()
 
-## Fonctionnalités
-* **Tri rapide** : Swipe à gauche pour jeter, swipe à droite pour garder.
-* **Corbeille sécurisée** : Les photos rejetées sont stockées dans une liste avant toute suppression définitive.
-* **Mémoire locale** : L'application sauvegarde automatiquement l'état de votre tri et le contenu de votre corbeille, même après fermeture.
-* **Interface fluide** : Animations personnalisées et retour visuel (couleurs dynamiques selon la direction du swipe).
+## The problem solved
 
----
+Smartphone galleries accumulate thousands of photos. This makes sorting tedious and fills up storage space quickly. Native applications often struggle to process large volumes of images or crash when dealing with hybrid systems like HyperOS that mix local files and cloud thumbnails.
 
-## Prérequis
+Swipe Clean makes cleaning your gallery easy. The app scans local storage, ignores ghost or corrupted files, and groups images by year and month. The user then sorts their photos using a fluid swiping interface, sends unwanted items to an internal trash bin, and can see the total storage space freed up.
 
-Pour compiler et lancer ce projet sur votre machine, vous devez installer :
-* Le [SDK Flutter](https://docs.flutter.dev/get-started/install) (version stable recommandée).
-* **Android Studio** (pour émuler ou compiler sur Android).
-* Un appareil physique connecté via USB/Wi-Fi (fortement recommandé pour tester la galerie photo) ou un émulateur.
+## Screenshots
 
----
+| <img src="screenshots/1.png" width="200"> | <img src="screenshots/2.png" width="200"> | <img src="screenshots/3.png" width="200"> | <img src="screenshots/4.png" width="200"> |
 
-## Installation et Lancement
+## Technical architecture
 
-### 1. Récupérer le projet
-Ouvrez votre terminal et clonez le dépôt :
-```bash
-git clone https://github.com/nathan-real/Swipe-Clean
-cd swipe_clean
-```
+The application is built with the Flutter framework and the Dart programming language. The architecture focuses heavily on performance and safe Android native calls.
 
-### 2. Installer les dépendances
-Téléchargez les paquets requis pour le fonctionnement de l'application (comme photo_manager ou shared_preferences) en exécutant :
+* **Native storage reading :** Integrates `photo_manager`. The query uses a strict `SizeConstraint` to exclude files without real physical dimensions. This prevents fatal errors caused by cloud thumbnails. It also loads metadata in asynchronous chunks.
+* **CPU optimization :** Injects manual pauses (`Future.delayed`) between mathematical calculation batches. This lets the Main Thread breathe and prevents the `Choreographer` from choking when analyzing massive galleries.
+* **Data persistence :** Uses `shared_preferences` wrapped in a `StorageService` to instantly memorize the dark mode state, vibration settings, processed photo IDs, and the trash bin content.
+* **State management :** Injects a `ValueNotifier` at the root of the widget tree (`main.dart`) to dynamically broadcast theme changes across the entire interface.
 
-```bash
-flutter pub get
-```
-⚠️ Note importante pour les utilisateurs Windows :
-Ce projet utilise des dépendances qui nécessitent la création de "liens symboliques". Pour que l'installation réussisse, vous devez activer le Mode développeur dans les paramètres de Windows.
-Astuce : tapez start ms-settings:developers dans votre terminal pour y accéder directement et cochez la case "Mode développeur".
+## Download
 
-### 3. Lancer l'application
-Assurez-vous qu'un téléphone Android est branché à votre ordinateur (avec le débogage USB activé) ou lancez un émulateur depuis Android Studio, puis exécutez :
+The application is officially available for Android devices.
 
-```bash
-flutter run
-```
-
----
-
-### Permissions requises
-L'application doit lire les médias locaux pour fonctionner. Les accès sont déjà pré-configurés dans le code source :
-
-Android (dans android/app/src/main/AndroidManifest.xml) : Requiert les permissions READ_EXTERNAL_STORAGE, READ_MEDIA_IMAGES et READ_MEDIA_VIDEO.
+[Download Swipe Clean on the Google Play Store](URL_TON_APP_PLAYSTORE)
+[Download the latest APK on GitHub](URL_DE_TA_RELEASE_GITHUB)
