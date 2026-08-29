@@ -27,4 +27,5 @@ The application is built with the Flutter framework and the Dart programming lan
 The application is officially available for Android devices.
 
 [Download Swipe Clean on the Google Play Store](https://play.google.com/store/apps/details?id=com.kubbycubs.swipe_clean)
+
 [Download the latest APK on GitHub](https://github.com/nathan-real/Swipe-Clean/releases/tag/0.9.6)
