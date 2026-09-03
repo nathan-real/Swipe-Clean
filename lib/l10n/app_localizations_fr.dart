@@ -123,4 +123,13 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get spaceSaved => 'Espace libéré';
+
+  @override
+  String get restartSort => 'Recommencer le tri';
+
+  @override
+  String get backToFolders => 'Retour aux dossiers';
+
+  @override
+  String get sortDone => 'Le tri est fini !';
 }

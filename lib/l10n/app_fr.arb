@@ -75,5 +75,11 @@
     "vibrationSetting": "Vibration au glissement",
     "@vibrationSetting": {},
     "spaceSaved": "Espace libéré",
-    "@spaceSaved": {}
+    "@spaceSaved": {},
+    "restartSort": "Recommencer le tri",
+    "@restartSort": {},
+    "backToFolders": "Retour aux dossiers",
+    "@backToFolders": {},
+    "sortDone": "Le tri est fini !",
+    "@sortDone": {}
 }

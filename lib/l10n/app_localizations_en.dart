@@ -123,4 +123,13 @@ class AppLocalizationsEn extends AppLocalizations {
 
   @override
   String get spaceSaved => 'Space saved';
+
+  @override
+  String get restartSort => 'Restart sort';
+
+  @override
+  String get backToFolders => 'Back to folders';
+
+  @override
+  String get sortDone => 'The sorting is done!';
 }

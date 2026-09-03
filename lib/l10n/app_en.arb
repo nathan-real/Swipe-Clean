@@ -38,5 +38,11 @@
     "noPhotos": "No photos found or permission denied",
     "vibrationSetting": "Swipe vibration",
     "spaceSaved": "Space saved",
-    "@spaceSaved": {}
+    "@spaceSaved": {},
+    "restartSort": "Restart sort",
+    "@restartSort": {},
+    "backToFolders": "Back to folders",
+    "@backToFolders": {},
+    "sortDone": "The sorting is done!",
+    "@sortDone": {}
 }

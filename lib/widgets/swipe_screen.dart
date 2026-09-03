@@ -12,14 +12,15 @@ import '../l10n/app_localizations.dart';
 class SwipeScreen extends StatefulWidget {
   final Function(AssetEntity) onTrashPhoto;
   final Function(AssetEntity) onRemoveFromTrash;
+  final VoidCallback onRestartSort;
   final String sortMode;
-
   final List<AssetEntity> photos;
 
   const SwipeScreen({
     super.key,
     required this.onTrashPhoto,
     required this.onRemoveFromTrash,
+    required this.onRestartSort,
     required this.sortMode,
     required this.photos,
   });
@@ -206,6 +207,45 @@ class _SwipeScreenState extends State<SwipeScreen> {
     );
   }
 
+  Widget _buildEndScreen(BuildContext context) {
+    return Container(
+      // On met un fond totalement opaque qui prend la couleur de ton thème (clair ou sombre)
+      color: Theme.of(context).scaffoldBackgroundColor,
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              AppLocalizations.of(context)!.sortDone,
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: AppColors.text(context),
+              ),
+            ),
+            const SizedBox(height: 30),
+            ElevatedButton.icon(
+              onPressed: () => Navigator.pop(context),
+              icon: const Icon(Icons.arrow_back_rounded),
+              label: Text(AppLocalizations.of(context)!.backToFolders),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.main,
+                foregroundColor: Colors.white,
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextButton.icon(
+              onPressed: widget.onRestartSort,
+              icon: const Icon(Icons.restart_alt_rounded),
+              label: Text(AppLocalizations.of(context)!.restartSort),
+              style: TextButton.styleFrom(foregroundColor: Colors.grey),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     if (_isLoading) {
@@ -213,324 +253,312 @@ class _SwipeScreenState extends State<SwipeScreen> {
     }
 
     if (_images.isEmpty) {
-      return Center(child: Text(AppLocalizations.of(context)!.noPhotos));
+      return Scaffold(body: SafeArea(child: _buildEndScreen(context)));
     }
+
+    final bool isFinished = _currentCardIndex >= _images.length;
 
     return Scaffold(
       body: SafeArea(
-        child: Column(
+        child: Stack(
           children: [
-            if (_currentCardIndex < _images.length)
-              Padding(
-                padding: const EdgeInsets.only(top: 12.0),
-                child: Builder(
-                  builder: (context) {
-                    final photo = _images[_currentCardIndex];
-                    final date = photo.createDateTime;
+            Column(
+              children: [
+                if (!isFinished)
+                  Padding(
+                    padding: const EdgeInsets.only(top: 12.0),
+                    child: Builder(
+                      builder: (context) {
+                        final photo = _images[_currentCardIndex];
+                        final date = photo.createDateTime;
 
-                    // Formatage simple de la date (JJ/MM/AAAA)
-                    final dateString =
-                        "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
-                    // Formatage de la résolution
-                    final resolutionString = "${photo.width} x ${photo.height}";
+                        final dateString =
+                            "${date.day.toString().padLeft(2, '0')}/${date.month.toString().padLeft(2, '0')}/${date.year}";
+                        final resolutionString =
+                            "${photo.width} x ${photo.height}";
 
-                    return Text(
-                      "$dateString   •   $resolutionString",
-                      style: const TextStyle(
-                        color: Colors.grey,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 14,
-                        letterSpacing: 0.5,
-                      ),
-                    );
-                  },
-                ),
-              ),
-            Expanded(
-              child: CardSwiper(
-                padding: const EdgeInsets.only(
-                  top: 10.0,
-                  left: 20.0,
-                  right: 20.0,
-                  bottom: 20.0,
-                ),
-                isLoop: false,
-                controller: controller,
-                cardsCount: _images.length,
-                numberOfCardsDisplayed: _images.length > 1 ? 2 : 1,
-                allowedSwipeDirection: const AllowedSwipeDirection.all(),
-
-                onSwipe: (previousIndex, currentIndex, direction) {
-                  // CAS 1 : L'utilisateur essaie de swiper en haut ou en bas
-                  if (direction == CardSwiperDirection.top ||
-                      direction == CardSwiperDirection.bottom) {
-                    return false;
-                  }
-
-                  // On met à jour l'index de la carte actuelle dans la variable globale
-                  if (currentIndex != null) {
-                    setState(() {
-                      _currentCardIndex = currentIndex;
-                    });
-                  }
-
-                  // CAS 2 : L'utilisateur swipe à droite
-                  if (direction == CardSwiperDirection.right) {
-                    if (_hapticEnabled) HapticFeedback.selectionClick();
-                    String idToSave = _images[previousIndex].id;
-                    StorageService().savePhotoAsProcessed(idToSave);
-
-                    // On cache l'image de la pellicule
-                    setState(() {
-                      _keptInSession.add(idToSave);
-                    });
-
-                    return true;
-                  }
-                  // CAS 3 : L'utilisateur swipe à gauche
-                  else if (direction == CardSwiperDirection.left) {
-                    if (_hapticEnabled) HapticFeedback.selectionClick();
-
-                    // On enregistre dans la session qu'elle est supprimée
-                    setState(
-                      () => _trashedInSession.add(_images[previousIndex].id),
-                    );
-                    widget.onTrashPhoto(_images[previousIndex]);
-                    return true;
-                  }
-
-                  return false;
-                },
-
-                onUndo: (previousIndex, currentIndex, direction) {
-                  final restoredPhoto = _images[currentIndex];
-
-                  // Si la carte précédente avait été glissée à gauche (vers la corbeille)
-                  if (direction == CardSwiperDirection.left) {
-                    widget.onRemoveFromTrash(restoredPhoto);
-                    setState(() {
-                      _trashedInSession.remove(restoredPhoto.id);
-                    });
-                  }
-                  // --- NOUVEAU : Si la carte avait été glissée à droite (conservée) ---
-                  else if (direction == CardSwiperDirection.right) {
-                    setState(() {
-                      _keptInSession.remove(restoredPhoto.id);
-                    });
-                    // Note : Si tu as une fonction StorageService().removePhotoFromProcessed(id),
-                    // c'est le bon endroit pour l'appeler afin d'annuler aussi la sauvegarde en dur.
-                  }
-
-                  // On met à jour l'index du Swiper principal
-                  setState(() {
-                    _currentCardIndex = currentIndex;
-                  });
-
-                  return true;
-                },
-
-                cardBuilder: (context, index, x, y) {
-                  final photo = _images[index];
-                  final double dragPourcentage =
-                      x / (MediaQuery.of(context).size.width);
-                  // On utilise un clamp à 1.0 au max pour éviter les erreurs
-                  final double opacity = dragPourcentage.abs().clamp(0.0, 0.6);
-
-                  Color overlayColor = const Color.fromARGB(0, 255, 255, 255);
-
-                  if (dragPourcentage > 0) {
-                    overlayColor = Colors.green;
-                  } else if (dragPourcentage < 0) {
-                    overlayColor = Colors.red;
-                  }
-
-                  return GestureDetector(
-                    onTap: () => _showFullImage(context, photo),
-                    child: Container(
-                      // Boite qui fait l'ombre
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(20),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withValues(alpha: 0.4),
-                            blurRadius: 15,
-                            offset: const Offset(0, 10),
-                            spreadRadius: 1,
+                        return Text(
+                          "$dateString   •   $resolutionString",
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontWeight: FontWeight.w600,
+                            fontSize: 14,
+                            letterSpacing: 0.5,
                           ),
-                        ],
-                      ),
-
-                      // Carte en elle même
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(20),
-                        child: Stack(
-                          fit: StackFit.expand,
-                          children: [
-                            Container(color: AppColors.main),
-
-                            // La photo
-                            AssetEntityImage(
-                              photo,
-                              isOriginal: false,
-                              thumbnailSize: const ThumbnailSize.square(1024),
-
-                              fit: BoxFit.contain,
-                            ),
-
-                            Container(
-                              // Calque pour afficher de la couleur au desssus
-                              color: overlayColor.withValues(alpha: opacity),
-                            ),
-                          ],
-                        ),
-                      ),
+                        );
+                      },
                     ),
-                  );
-                },
-              ),
-            ),
-
-            // Les bouttons de control
-            Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                children: [
-                  FloatingActionButton(
-                    heroTag: "btn_trash",
-                    onPressed: () => controller.swipe(CardSwiperDirection.left),
-                    backgroundColor: Colors.red,
-                    shape: CircleBorder(),
-                    child: const Icon(Icons.close_rounded, color: Colors.white),
                   ),
-                  FloatingActionButton(
-                    heroTag: "btn_undo",
-                    onPressed: controller.undo,
-                    backgroundColor: Colors.grey,
-                    shape: CircleBorder(),
-                    child: const Icon(Icons.undo, color: Colors.white),
-                  ),
-                  FloatingActionButton(
-                    heroTag: "btn_keep",
-                    onPressed: () =>
-                        controller.swipe(CardSwiperDirection.right),
-                    backgroundColor: Colors.green,
-                    shape: CircleBorder(),
-                    child: const Icon(Icons.check_rounded, color: Colors.white),
-                  ),
-                ],
-              ),
-            ),
-            // --- NOUVEAU BLOC : La Pellicule Magnétique ---
-            if (_currentCardIndex < _images.length)
-              Padding(
-                padding: const EdgeInsets.only(bottom: 20),
-                child: SizedBox(
-                  height: 80,
-                  child: Builder(
-                    builder: (context) {
-                      final currentPhoto = _images[_currentCardIndex];
 
-                      // On prend toute la chronologie valide
-                      final validChronoImages = _chronologicalImages
-                          .where(
-                            (img) =>
-                                !_trashedInSession.contains(img.id) &&
-                                !_keptInSession.contains(img.id),
-                          )
-                          .toList();
+                Expanded(
+                  child: CardSwiper(
+                    padding: const EdgeInsets.all(20.0),
+                    isLoop: false,
+                    controller: controller,
+                    cardsCount: _images.length,
+                    numberOfCardsDisplayed: _images.length > 1 ? 2 : 1,
+                    allowedSwipeDirection: const AllowedSwipeDirection.all(),
+                    onSwipe: (previousIndex, currentIndex, direction) {
+                      if (direction == CardSwiperDirection.top ||
+                          direction == CardSwiperDirection.bottom) {
+                        return false;
+                      }
 
-                      final chronoIndex = validChronoImages.indexWhere(
-                        (img) => img.id == currentPhoto.id,
-                      );
-
-                      // SYNCHRONISATION : Si on swipe la grande carte, la pellicule s'aligne automatiquement
-                      WidgetsBinding.instance.addPostFrameCallback((_) {
-                        if (_filmstripController.hasClients) {
-                          int currentPage =
-                              _filmstripController.page?.round() ?? 0;
-
-                          if (currentPage != chronoIndex) {
-                            // On calcule l'écart entre la position actuelle et la destination
-                            int distance = (currentPage - chronoIndex).abs();
-
-                            if (distance > 3) {
-                              // Mode aléatoire ou grand saut : on téléporte sans animation pour préserver les performances
-                              _filmstripController.jumpToPage(chronoIndex);
-                            } else {
-                              // Mode chronologique (déplacement de 1 ou 2 photos) : on glisse en douceur
-                              _filmstripController.animateToPage(
-                                chronoIndex,
-                                duration: const Duration(milliseconds: 300),
-                                curve: Curves.easeOut,
-                              );
-                            }
-                          }
-                        }
+                      // CORRECTION : On force l'index à la taille maximale si currentIndex est null (fin de pile)
+                      setState(() {
+                        _currentCardIndex = currentIndex ?? _images.length;
                       });
 
-                      return PageView.builder(
-                        controller: _filmstripController,
-                        itemCount: validChronoImages.length,
-                        // Le magnétisme est natif au PageView !
-                        // Quand l'utilisateur s'arrête de slider sur une photo, ça déclenche ceci :
-                        onPageChanged: (index) {
-                          // On injecte la photo sélectionnée au premier plan du swiper
-                          _injectPhotoIntoSwiper(validChronoImages[index]);
-                          // Petit retour haptique pour la sensation de "cran" magnétique
-                          if (_hapticEnabled) HapticFeedback.selectionClick();
-                        },
-                        itemBuilder: (context, index) {
-                          final photo = validChronoImages[index];
-                          final isCurrent = index == chronoIndex;
+                      if (direction == CardSwiperDirection.right) {
+                        if (_hapticEnabled) HapticFeedback.selectionClick();
+                        String idToSave = _images[previousIndex].id;
+                        StorageService().savePhotoAsProcessed(idToSave);
 
-                          return GestureDetector(
-                            onTap: isCurrent
-                                ? null
-                                : () => _showFullImage(context, photo),
-                            child: AnimatedContainer(
-                              duration: const Duration(milliseconds: 250),
-                              // L'image centrale est plus grande
-                              margin: EdgeInsets.symmetric(
-                                horizontal: 4,
-                                vertical: isCurrent ? 0 : 10,
+                        setState(() {
+                          _keptInSession.add(idToSave);
+                        });
+
+                        return true;
+                      } else if (direction == CardSwiperDirection.left) {
+                        if (_hapticEnabled) HapticFeedback.selectionClick();
+
+                        setState(
+                          () =>
+                              _trashedInSession.add(_images[previousIndex].id),
+                        );
+                        widget.onTrashPhoto(_images[previousIndex]);
+                        return true;
+                      }
+
+                      return false;
+                    },
+                    onUndo: (previousIndex, currentIndex, direction) {
+                      final restoredPhoto = _images[currentIndex];
+
+                      if (direction == CardSwiperDirection.left) {
+                        widget.onRemoveFromTrash(restoredPhoto);
+                        setState(() {
+                          _trashedInSession.remove(restoredPhoto.id);
+                        });
+                      } else if (direction == CardSwiperDirection.right) {
+                        setState(() {
+                          _keptInSession.remove(restoredPhoto.id);
+                        });
+                      }
+
+                      setState(() {
+                        _currentCardIndex = currentIndex;
+                      });
+
+                      return true;
+                    },
+                    cardBuilder: (context, index, x, y) {
+                      final photo = _images[index];
+                      final double dragPourcentage =
+                          x / (MediaQuery.of(context).size.width);
+                      final double opacity = dragPourcentage.abs().clamp(
+                        0.0,
+                        0.6,
+                      );
+
+                      Color overlayColor = const Color.fromARGB(
+                        0,
+                        255,
+                        255,
+                        255,
+                      );
+
+                      if (dragPourcentage > 0) {
+                        overlayColor = Colors.green;
+                      } else if (dragPourcentage < 0) {
+                        overlayColor = Colors.red;
+                      }
+
+                      return GestureDetector(
+                        onTap: () => _showFullImage(context, photo),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(20),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withValues(alpha: 0.4),
+                                blurRadius: 15,
+                                offset: const Offset(0, 10),
+                                spreadRadius: 1,
                               ),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                border: isCurrent
-                                    ? Border.all(
-                                        color: AppColors.main,
-                                        width: 3,
-                                      )
-                                    : null,
-                              ),
-                              child: ClipRRect(
-                                borderRadius: BorderRadius.circular(
-                                  isCurrent ? 9 : 12,
-                                ),
-                                child: AssetEntityImage(
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(20),
+                            child: Stack(
+                              fit: StackFit.expand,
+                              children: [
+                                Container(color: AppColors.main),
+                                AssetEntityImage(
                                   photo,
                                   isOriginal: false,
                                   thumbnailSize: const ThumbnailSize.square(
-                                    150,
+                                    1024,
                                   ),
-                                  fit: BoxFit.cover,
-                                  color: isCurrent
-                                      ? null
-                                      : Colors.black.withValues(alpha: 0.5),
-                                  colorBlendMode: isCurrent
-                                      ? null
-                                      : BlendMode.darken,
+                                  fit: BoxFit.contain,
                                 ),
-                              ),
+                                Container(
+                                  color: overlayColor.withValues(
+                                    alpha: opacity,
+                                  ),
+                                ),
+                              ],
                             ),
-                          );
-                        },
+                          ),
+                        ),
                       );
                     },
                   ),
                 ),
-              ),
+
+                // On cache bien la rangée de boutons à la fin
+                if (!isFinished)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                      children: [
+                        FloatingActionButton(
+                          heroTag: "btn_trash",
+                          onPressed: () =>
+                              controller.swipe(CardSwiperDirection.left),
+                          backgroundColor: Colors.red,
+                          shape: const CircleBorder(),
+                          child: const Icon(
+                            Icons.close_rounded,
+                            color: Colors.white,
+                          ),
+                        ),
+                        FloatingActionButton(
+                          heroTag: "btn_undo",
+                          onPressed: controller.undo,
+                          backgroundColor: Colors.grey,
+                          shape: const CircleBorder(),
+                          child: const Icon(Icons.undo, color: Colors.white),
+                        ),
+                        FloatingActionButton(
+                          heroTag: "btn_keep",
+                          onPressed: () =>
+                              controller.swipe(CardSwiperDirection.right),
+                          backgroundColor: Colors.green,
+                          shape: const CircleBorder(),
+                          child: const Icon(
+                            Icons.check_rounded,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+
+                if (!isFinished)
+                  Padding(
+                    padding: const EdgeInsets.only(bottom: 20),
+                    child: SizedBox(
+                      height: 80,
+                      child: Builder(
+                        builder: (context) {
+                          final currentPhoto = _images[_currentCardIndex];
+                          final validChronoImages = _chronologicalImages
+                              .where(
+                                (img) =>
+                                    !_trashedInSession.contains(img.id) &&
+                                    !_keptInSession.contains(img.id),
+                              )
+                              .toList();
+
+                          final chronoIndex = validChronoImages.indexWhere(
+                            (img) => img.id == currentPhoto.id,
+                          );
+
+                          WidgetsBinding.instance.addPostFrameCallback((_) {
+                            if (_filmstripController.hasClients) {
+                              int currentPage =
+                                  _filmstripController.page?.round() ?? 0;
+
+                              if (currentPage != chronoIndex) {
+                                int distance = (currentPage - chronoIndex)
+                                    .abs();
+
+                                if (distance > 3) {
+                                  _filmstripController.jumpToPage(chronoIndex);
+                                } else {
+                                  _filmstripController.animateToPage(
+                                    chronoIndex,
+                                    duration: const Duration(milliseconds: 300),
+                                    curve: Curves.easeOut,
+                                  );
+                                }
+                              }
+                            }
+                          });
+
+                          return PageView.builder(
+                            controller: _filmstripController,
+                            itemCount: validChronoImages.length,
+                            onPageChanged: (index) {
+                              _injectPhotoIntoSwiper(validChronoImages[index]);
+                              if (_hapticEnabled)
+                                HapticFeedback.selectionClick();
+                            },
+                            itemBuilder: (context, index) {
+                              final photo = validChronoImages[index];
+                              final isCurrent = index == chronoIndex;
+
+                              return GestureDetector(
+                                onTap: isCurrent
+                                    ? null
+                                    : () => _showFullImage(context, photo),
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 250),
+                                  margin: EdgeInsets.symmetric(
+                                    horizontal: 4,
+                                    vertical: isCurrent ? 0 : 10,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: isCurrent
+                                        ? Border.all(
+                                            color: AppColors.main,
+                                            width: 3,
+                                          )
+                                        : null,
+                                  ),
+                                  child: ClipRRect(
+                                    borderRadius: BorderRadius.circular(
+                                      isCurrent ? 9 : 12,
+                                    ),
+                                    child: AssetEntityImage(
+                                      photo,
+                                      isOriginal: false,
+                                      thumbnailSize: const ThumbnailSize.square(
+                                        150,
+                                      ),
+                                      fit: BoxFit.cover,
+                                      color: isCurrent
+                                          ? null
+                                          : Colors.black.withValues(alpha: 0.5),
+                                      colorBlendMode: isCurrent
+                                          ? null
+                                          : BlendMode.darken,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+              ],
+            ),
+            if (isFinished) _buildEndScreen(context),
           ],
         ),
       ),

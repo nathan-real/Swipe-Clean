@@ -325,6 +325,24 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Espace libéré'**
   String get spaceSaved;
+
+  /// No description provided for @restartSort.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recommencer le tri'**
+  String get restartSort;
+
+  /// No description provided for @backToFolders.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retour aux dossiers'**
+  String get backToFolders;
+
+  /// No description provided for @sortDone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le tri est fini !'**
+  String get sortDone;
 }
 
 class _AppLocalizationsDelegate

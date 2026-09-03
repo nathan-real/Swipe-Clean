@@ -34,6 +34,20 @@ class _SortPageState extends State<SortPage>
 
   List<AssetEntity> _images = [];
 
+  Future<void> _restartSorting() async {
+    // 1. On récupère tous les IDs du dossier actuel
+    List<String> idsInFolder = widget.photosToSort.map((p) => p.id).toList();
+
+    // 2. On les retire de la base de données
+    await StorageService().resetProcessedPhotos(idsInFolder);
+
+    // 3. On recharge la liste complète et on force la recréation du Swiper
+    setState(() {
+      _images = List.from(widget.photosToSort);
+      _swiperKey = UniqueKey();
+    });
+  }
+
   @override
   bool get wantKeepAlive => true;
 
@@ -100,19 +114,7 @@ class _SortPageState extends State<SortPage>
                     TextButton(
                       onPressed: () async {
                         Navigator.pop(context);
-                        // On récupère tous les IDs du dossier actuel pour les "oublier"
-                        List<String> idsInFolder = widget.photosToSort
-                            .map((p) => p.id)
-                            .toList();
-                        await StorageService().resetProcessedPhotos(
-                          idsInFolder,
-                        );
-
-                        // On recharge la liste complète
-                        setState(() {
-                          _images = List.from(widget.photosToSort);
-                          _swiperKey = UniqueKey();
-                        });
+                        await _restartSorting();
                       },
                       child: Text(
                         AppLocalizations.of(context)!.restart,
@@ -251,6 +253,7 @@ class _SortPageState extends State<SortPage>
                     key: _swiperKey,
                     onTrashPhoto: widget.onTrashPhoto,
                     onRemoveFromTrash: widget.onRemoveFromTrash,
+                    onRestartSort: _restartSorting,
                     sortMode: _sortMode,
                     photos: _images,
                   ),
