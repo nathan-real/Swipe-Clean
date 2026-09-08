@@ -99,11 +99,20 @@ class _SwipeScreenState extends State<SwipeScreen> {
 
   // Fonction qui charge les photos
   Future<void> _loadPhotos() async {
-    final trashedIds = await StorageService().getTrashList();
-    // On filtre en cherchant si parmis tous les ids des photos on supprimes celles qui sont aussi dans la corbeille
+    final trashedIdsList = await StorageService().getTrashList();
+
+    // On convertit la liste en Set
+    final Set<String> trashedIds = trashedIdsList.toSet();
+
+    // On force une micro-pause pour laisser le temps
+    // au CircularProgressIndicator de s'afficher sur l'écran
+    await Future.delayed(const Duration(milliseconds: 50));
+
     final filteredPhotos = widget.photos.where((photo) {
       return !trashedIds.contains(photo.id);
     }).toList();
+
+    await Future.delayed(const Duration(milliseconds: 50));
 
     setState(() {
       _chronologicalImages = List.from(filteredPhotos)

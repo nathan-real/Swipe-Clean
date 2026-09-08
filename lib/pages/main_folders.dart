@@ -128,12 +128,14 @@ class MainFoldersState extends State<MainFolders>
 
   // Fonction pour actualiser l'interface instantanément sans recharger la galerie
   Future<void> _refreshFoldersData() async {
-    final processedIds = await StorageService().getProcessedPhotoIds();
-    final trashedIds = await StorageService().getTrashList();
+    final processedIdsList = await StorageService().getProcessedPhotoIds();
+    final trashedIdsList = await StorageService().getTrashList();
+
+    final Set<String> processedIds = processedIdsList.toSet();
+    final Set<String> trashedIds = trashedIdsList.toSet();
 
     Map<int, Map<int, List<AssetEntity>>> updatedFolders = {};
 
-    // On part tjrs de la liste maître
     for (var year in _masterFoldersMap.keys) {
       updatedFolders[year] = {};
 
@@ -157,11 +159,13 @@ class MainFoldersState extends State<MainFolders>
 
   // Fonction pour mettre à jour la liste maître après une suppresion définituve dans la TrashPage
   void removePermanentlyDeletedPhotos(List<String> deletedIds) {
+    final Set<String> deletedSet = deletedIds.toSet();
+
     for (var year in _masterFoldersMap.keys) {
       for (var month in _masterFoldersMap[year]!.keys) {
         // On retire de la liste maître les photos qui n'existent plus
         _masterFoldersMap[year]![month]!.removeWhere(
-          (photo) => deletedIds.contains(photo.id),
+          (photo) => deletedSet.contains(photo.id),
         );
       }
     }
