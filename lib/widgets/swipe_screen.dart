@@ -503,8 +503,9 @@ class _SwipeScreenState extends State<SwipeScreen> {
                             itemCount: validChronoImages.length,
                             onPageChanged: (index) {
                               _injectPhotoIntoSwiper(validChronoImages[index]);
-                              if (_hapticEnabled)
+                              if (_hapticEnabled) {
                                 HapticFeedback.selectionClick();
+                              }
                             },
                             itemBuilder: (context, index) {
                               final photo = validChronoImages[index];
