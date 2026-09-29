@@ -231,8 +231,7 @@ class MainFoldersState extends State<MainFolders>
         const SizedBox(height: 10),
 
         Row(
-          mainAxisAlignment:
-              MainAxisAlignment.center, // Pour les espacer proprement
+          mainAxisAlignment: MainAxisAlignment.center,
           children: [
             ElevatedButton.icon(
               onPressed: _loadAllPhotos,
@@ -360,9 +359,7 @@ class MainFoldersState extends State<MainFolders>
                         horizontal: 16.0,
                         vertical: 6.0,
                       ),
-
                       decoration: BoxDecoration(
-                        color: AppColors.pills(context),
                         borderRadius: BorderRadius.circular(30.0),
                         boxShadow: [
                           BoxShadow(
@@ -372,189 +369,207 @@ class MainFoldersState extends State<MainFolders>
                           ),
                         ],
                       ),
-
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(30.0),
 
-                        child: Theme(
-                          // Enlève les bordures par défaut de l'ExpansionTile
-                          data: Theme.of(context).copyWith(
-                            dividerColor: Colors.transparent,
-                            splashFactory: NoSplash.splashFactory,
-                            highlightColor: Colors.transparent,
-                            hoverColor: Colors.transparent,
-                          ),
-                          // La brique principale de la listview
-                          child: ExpansionTile(
-                            iconColor: AppColors.main,
-                            textColor: AppColors.main,
+                        // Le Material gère la couleur de fond
+                        child: Material(
+                          color: AppColors.pills(context),
 
-                            title: Text.rich(
-                              TextSpan(
+                          child: Theme(
+                            // On désactive toutes les animations de clic (ton code d'origine)
+                            data: Theme.of(context).copyWith(
+                              dividerColor: Colors.transparent,
+                              splashFactory: NoSplash.splashFactory,
+                              highlightColor: Colors.transparent,
+                              hoverColor: Colors.transparent,
+                            ),
+                            child: ExpansionTile(
+                              iconColor: AppColors.main,
+                              collapsedIconColor: Colors
+                                  .grey
+                                  .shade500, // Flèche grise quand c'est fermé
+                              tilePadding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 4, // Un peu plus aéré
+                              ),
+                              title: Row(
                                 children: [
-                                  //L'année en grand et en gras
-                                  TextSpan(
-                                    text: year.toString(),
-                                    style: const TextStyle(
+                                  // L'année en grand et en gras
+                                  Text(
+                                    year.toString(),
+                                    style: TextStyle(
                                       fontSize: 22,
                                       fontWeight: FontWeight.bold,
+                                      color: AppColors.text(context),
                                     ),
                                   ),
-                                  // Le nombre de photos
-                                  TextSpan(
-                                    text:
-                                        "  ($totalPhotosForYear ${AppLocalizations.of(context)!.photos})",
-                                    style: TextStyle(
-                                      fontSize: 14,
-                                      fontWeight: FontWeight.normal,
-                                      color: AppColors.text(
-                                        context,
-                                      ).withValues(alpha: 0.6),
+                                  const SizedBox(width: 12),
+
+                                  // Le badge coloré pour le nombre de photos
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 10,
+                                      vertical: 4,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: AppColors.main.withValues(
+                                        alpha: 0.15,
+                                      ),
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: Text(
+                                      "$totalPhotosForYear ${AppLocalizations.of(context)!.photos}",
+                                      style: const TextStyle(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.main,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                            children: monthsList.map((month) {
-                              // Les photos restantes (à trier)
-                              final photosForThisMonth = monthsData[month]!;
-                              final int remainingCount =
-                                  photosForThisMonth.length;
+                              children: monthsList.map((month) {
+                                // Les photos restantes (à trier)
+                                final photosForThisMonth = monthsData[month]!;
+                                final int remainingCount =
+                                    photosForThisMonth.length;
 
-                              // Le total d'origine
-                              final int totalCount =
-                                  _masterFoldersMap[year]![month]!.length;
+                                // Le total d'origine
+                                final int totalCount =
+                                    _masterFoldersMap[year]![month]!.length;
 
-                              // Calculs pour la barre de progression
-                              final int sortedCount =
-                                  totalCount - remainingCount;
-                              final double progress = totalCount == 0
-                                  ? 0.0
-                                  : sortedCount / totalCount;
+                                // Calculs pour la barre de progression
+                                final int sortedCount =
+                                    totalCount - remainingCount;
+                                final double progress = totalCount == 0
+                                    ? 0.0
+                                    : sortedCount / totalCount;
 
-                              final AssetEntity firstPhoto =
-                                  _masterFoldersMap[year]![month]!.first;
-                              // Composant présent dans la place qui s'étend
-                              return ListTile(
-                                contentPadding: const EdgeInsets.symmetric(
-                                  horizontal: 20,
-                                ),
-                                leading: Container(
-                                  width: 45, // Taille du carré
-                                  height: 45,
-                                  decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(10),
+                                final AssetEntity firstPhoto =
+                                    _masterFoldersMap[year]![month]!.first;
+                                // Composant présent dans la place qui s'étend
+                                return ListTile(
+                                  contentPadding: const EdgeInsets.symmetric(
+                                    horizontal: 20,
                                   ),
-                                  // Pour que l'image respecte les bords arrondis du container
-                                  child: ClipRRect(
-                                    borderRadius: BorderRadius.circular(10),
-                                    child: Stack(
-                                      fit: StackFit.expand,
+                                  leading: Container(
+                                    width: 45, // Taille du carré
+                                    height: 45,
+                                    decoration: BoxDecoration(
+                                      borderRadius: BorderRadius.circular(10),
+                                    ),
+                                    // Pour que l'image respecte les bords arrondis du container
+                                    child: ClipRRect(
+                                      borderRadius: BorderRadius.circular(10),
+                                      child: Stack(
+                                        fit: StackFit.expand,
+                                        children: [
+                                          // Fond uni au cas où l'image tarde à charger
+                                          Container(
+                                            color: AppColors.main.withValues(
+                                              alpha: 0.1,
+                                            ),
+                                          ),
+                                          // La photo de preview
+                                          AssetEntityImage(
+                                            firstPhoto,
+                                            isOriginal:
+                                                false, // On demande une miniature
+                                            thumbnailSize:
+                                                const ThumbnailSize.square(100),
+                                            fit: BoxFit.cover,
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  title: Text.rich(
+                                    TextSpan(
                                       children: [
-                                        // Fond uni au cas où l'image tarde à charger
-                                        Container(
-                                          color: AppColors.main.withValues(
-                                            alpha: 0.1,
+                                        // Le nom du mois
+                                        TextSpan(
+                                          text: _getMonthName(context, month),
+                                          style: const TextStyle(
+                                            fontSize:
+                                                16, // Un peu plus petit que l'année
+                                            fontWeight: FontWeight.w500,
                                           ),
                                         ),
-                                        // La photo de preview
-                                        AssetEntityImage(
-                                          firstPhoto,
-                                          isOriginal:
-                                              false, // On demande une miniature
-                                          thumbnailSize:
-                                              const ThumbnailSize.square(100),
-                                          fit: BoxFit.cover,
+                                        // Le compteur de photos
+                                        TextSpan(
+                                          style: TextStyle(
+                                            fontSize: 13,
+                                            color: AppColors.text(
+                                              context,
+                                            ).withValues(alpha: 0.6),
+                                          ),
                                         ),
                                       ],
                                     ),
                                   ),
-                                ),
-                                title: Text.rich(
-                                  TextSpan(
-                                    children: [
-                                      // Le nom du mois
-                                      TextSpan(
-                                        text: _getMonthName(context, month),
-                                        style: const TextStyle(
-                                          fontSize:
-                                              16, // Un peu plus petit que l'année
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                      // Le compteur de photos
-                                      TextSpan(
-                                        style: TextStyle(
-                                          fontSize: 13,
-                                          color: AppColors.text(
-                                            context,
-                                          ).withValues(alpha: 0.6),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                subtitle: Padding(
-                                  padding: const EdgeInsets.only(top: 8.0),
-                                  child: Row(
-                                    children: [
-                                      Expanded(
-                                        child: ClipRRect(
-                                          borderRadius: BorderRadius.circular(
-                                            4,
+                                  subtitle: Padding(
+                                    padding: const EdgeInsets.only(top: 8.0),
+                                    child: Row(
+                                      children: [
+                                        Expanded(
+                                          child: ClipRRect(
+                                            borderRadius: BorderRadius.circular(
+                                              4,
+                                            ),
+                                            child: LinearProgressIndicator(
+                                              value: progress,
+                                              backgroundColor: AppColors.text(
+                                                context,
+                                              ).withValues(alpha: 0.15),
+                                              valueColor:
+                                                  AlwaysStoppedAnimation<Color>(
+                                                    AppColors.main,
+                                                  ),
+                                              minHeight: 6,
+                                            ),
                                           ),
-                                          child: LinearProgressIndicator(
-                                            value: progress,
-                                            backgroundColor: AppColors.text(
+                                        ),
+                                        const SizedBox(width: 10),
+                                        Text(
+                                          "$sortedCount / $totalCount",
+                                          style: TextStyle(
+                                            fontSize: 12,
+                                            color: AppColors.text(
                                               context,
-                                            ).withValues(alpha: 0.15),
-                                            valueColor:
-                                                AlwaysStoppedAnimation<Color>(
-                                                  AppColors.main,
-                                                ),
-                                            minHeight: 6,
+                                            ).withValues(alpha: 0.5),
                                           ),
                                         ),
-                                      ),
-                                      const SizedBox(width: 10),
-                                      Text(
-                                        "$sortedCount / $totalCount",
-                                        style: TextStyle(
-                                          fontSize: 12,
-                                          color: AppColors.text(
-                                            context,
-                                          ).withValues(alpha: 0.5),
+                                      ],
+                                    ),
+                                  ),
+                                  trailing: const Icon(
+                                    Icons.arrow_forward_ios_rounded,
+                                    size: 16,
+                                    color: Colors.grey,
+                                  ),
+                                  onTap: () {
+                                    final fullPhotosForThisMonth =
+                                        _masterFoldersMap[year]![month]!;
+                                    Navigator.push(
+                                      context,
+                                      SlideUpRoute(
+                                        page: SortPage(
+                                          onTrashPhoto: widget.onTrashPhoto,
+                                          onRemoveFromTrash:
+                                              widget.onRemoveFromTrash,
+                                          photosToSort: fullPhotosForThisMonth,
+                                          title:
+                                              "${_getMonthName(context, month)} $year",
                                         ),
                                       ),
-                                    ],
-                                  ),
-                                ),
-                                trailing: const Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  size: 16,
-                                  color: Colors.grey,
-                                ),
-                                onTap: () {
-                                  final fullPhotosForThisMonth =
-                                      _masterFoldersMap[year]![month]!;
-                                  Navigator.push(
-                                    context,
-                                    SlideUpRoute(
-                                      page: SortPage(
-                                        onTrashPhoto: widget.onTrashPhoto,
-                                        onRemoveFromTrash:
-                                            widget.onRemoveFromTrash,
-                                        photosToSort: fullPhotosForThisMonth,
-                                        title:
-                                            "${_getMonthName(context, month)} $year",
-                                      ),
-                                    ),
-                                  ).then((_) {
-                                    _refreshFoldersData();
-                                  });
-                                },
-                              );
-                            }).toList(),
+                                    ).then((_) {
+                                      _refreshFoldersData();
+                                    });
+                                  },
+                                );
+                              }).toList(),
+                            ),
                           ),
                         ),
                       ),
