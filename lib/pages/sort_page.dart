@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:photo_manager/photo_manager.dart';
+import 'package:share_plus/share_plus.dart';
 import '../services/storage_service.dart';
 import '../widgets/swipe_screen.dart';
 import '../app_colors.dart';
@@ -33,6 +34,19 @@ class _SortPageState extends State<SortPage>
   Key _swiperKey = UniqueKey();
 
   List<AssetEntity> _images = [];
+
+  // Photo actuellement affichée dans le swiper (mise à jour par SwipeScreen)
+  AssetEntity? _currentPhoto;
+
+  Future<void> _shareCurrentPhoto() async {
+    final photo = _currentPhoto;
+    if (photo == null) return;
+
+    final file = await photo.file;
+    if (file == null) return;
+
+    await SharePlus.instance.share(ShareParams(files: [XFile(file.path)]));
+  }
 
   Future<void> _restartSorting() async {
     // 1. On récupère tous les IDs du dossier actuel
@@ -84,6 +98,10 @@ class _SortPageState extends State<SortPage>
         title: Text(widget.title),
         foregroundColor: Colors.white,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.share_rounded),
+            onPressed: _shareCurrentPhoto,
+          ),
           IconButton(
             icon: const Icon(Icons.restart_alt_rounded),
             onPressed: () {
@@ -256,6 +274,7 @@ class _SortPageState extends State<SortPage>
                     onRestartSort: _restartSorting,
                     sortMode: _sortMode,
                     photos: _images,
+                    onCurrentPhotoChanged: (photo) => _currentPhoto = photo,
                   ),
                 ),
               ],

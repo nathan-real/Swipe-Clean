@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_card_swiper/flutter_card_swiper.dart';
 import 'package:swipe_clean/services/storage_service.dart';
 import '../app_colors.dart';
+import '../utils/format_utils.dart';
 import 'package:photo_manager/photo_manager.dart';
 import 'package:photo_manager_image_provider/photo_manager_image_provider.dart';
 import 'package:flutter/services.dart';
@@ -15,6 +16,8 @@ class SwipeScreen extends StatefulWidget {
   final VoidCallback onRestartSort;
   final String sortMode;
   final List<AssetEntity> photos;
+  // Prévient le parent de la photo actuellement affichée (null s'il n'y en a plus)
+  final ValueChanged<AssetEntity?>? onCurrentPhotoChanged;
 
   const SwipeScreen({
     super.key,
@@ -23,6 +26,7 @@ class SwipeScreen extends StatefulWidget {
     required this.onRestartSort,
     required this.sortMode,
     required this.photos,
+    this.onCurrentPhotoChanged,
   });
 
   @override
@@ -50,6 +54,8 @@ class _SwipeScreenState extends State<SwipeScreen> {
   final Set<String> _trashedInSession = {};
   // Garde en mémoire les ID des photos conservées (swipe droit)
   final Set<String> _keptInSession = {};
+  // Cache des poids de fichiers (en octets) pour éviter de relire le fichier à chaque rebuild
+  final Map<String, Future<int?>> _fileSizeFutures = {};
   @override
   // On load les photos à l'initialisation
   void initState() {
@@ -122,6 +128,15 @@ class _SwipeScreenState extends State<SwipeScreen> {
       _isLoading = false;
     });
     _applySorting();
+  }
+
+  // Récupère le poids du fichier d'une photo (mis en cache par ID)
+  Future<int?> _getFileSize(AssetEntity photo) {
+    return _fileSizeFutures.putIfAbsent(photo.id, () async {
+      final file = await photo.file;
+      if (file == null) return null;
+      return await file.length();
+    });
   }
 
   // Fonction appelée quand on sélectionne une photo dans la pellicule du bas
@@ -262,10 +277,16 @@ class _SwipeScreenState extends State<SwipeScreen> {
     }
 
     if (_images.isEmpty) {
+      widget.onCurrentPhotoChanged?.call(null);
       return Scaffold(body: SafeArea(child: _buildEndScreen(context)));
     }
 
     final bool isFinished = _currentCardIndex >= _images.length;
+
+    // On transmet la photo affichée au parent (pour le bouton de partage)
+    widget.onCurrentPhotoChanged?.call(
+      isFinished ? null : _images[_currentCardIndex],
+    );
 
     return Scaffold(
       body: SafeArea(
@@ -286,14 +307,23 @@ class _SwipeScreenState extends State<SwipeScreen> {
                         final resolutionString =
                             "${photo.width} x ${photo.height}";
 
-                        return Text(
-                          "$dateString   •   $resolutionString",
-                          style: const TextStyle(
-                            color: Colors.grey,
-                            fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                            letterSpacing: 0.5,
-                          ),
+                        return FutureBuilder<int?>(
+                          future: _getFileSize(photo),
+                          builder: (context, snapshot) {
+                            final sizeString = snapshot.data != null
+                                ? "   •   ${formatBytes(snapshot.data!)}"
+                                : "";
+
+                            return Text(
+                              "$dateString   •   $resolutionString$sizeString",
+                              style: const TextStyle(
+                                color: Colors.grey,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 14,
+                                letterSpacing: 0.5,
+                              ),
+                            );
+                          },
                         );
                       },
                     ),

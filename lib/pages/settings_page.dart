@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../main.dart';
 import 'package:swipe_clean/app_colors.dart';
 import '../services/storage_service.dart';
+import '../utils/format_utils.dart';
 
 //Langue
 import '../l10n/app_localizations.dart';
@@ -47,14 +48,6 @@ class _SettingsPageState extends State<SettingsPage> {
     StorageService().saveThemeMode(isDark);
   }
 
-  String _formatBytes(int bytes) {
-    if (bytes <= 0) return "0 Mo";
-    if (bytes < 1024 * 1024) return "${(bytes / 1024).toStringAsFixed(1)} Ko";
-    if (bytes < 1024 * 1024 * 1024) {
-      return "${(bytes / (1024 * 1024)).toStringAsFixed(1)} Mo";
-    }
-    return "${(bytes / (1024 * 1024 * 1024)).toStringAsFixed(2)} Go";
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -136,7 +129,7 @@ class _SettingsPageState extends State<SettingsPage> {
                               ),
                             )
                           : Text(
-                              _formatBytes(_savedSpaceBytes),
+                              formatBytes(_savedSpaceBytes),
                               style: const TextStyle(
                                 color: Colors.white,
                                 fontSize: 28,
