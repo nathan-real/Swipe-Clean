@@ -135,12 +135,14 @@ class _HomePageState extends State<HomePage> {
 
     // Si des photos ont bien été supprimées
     if (successfullyDeletedIds.isNotEmpty) {
+      // On retire les photos supprimées de la liste maître (une seule fois pour toute la liste)
+      mainFoldersKey.currentState?.removePermanentlyDeletedPhotos(
+        successfullyDeletedIds,
+      );
+
       // On calcule la place gagnée
       int spaceSavedThisSession = 0;
       for (String id in successfullyDeletedIds) {
-        mainFoldersKey.currentState?.removePermanentlyDeletedPhotos(
-          successfullyDeletedIds,
-        );
         // On additionne le poids des photos confirmées supprimées
         spaceSavedThisSession += fileSizes[id] ?? 0;
       }
