@@ -40,5 +40,7 @@
     "spaceSaved": "Espacio liberado",
     "restartSort": "Reiniciar la clasificación",
     "backToFolders": "Volver a las carpetas",
-    "sortDone": "¡Clasificación terminada!"
+    "sortDone": "¡Clasificación terminada!",
+    "language": "Idioma",
+    "systemLanguage": "Idioma del sistema"
 }

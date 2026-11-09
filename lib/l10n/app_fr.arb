@@ -81,5 +81,9 @@
     "backToFolders": "Retour aux dossiers",
     "@backToFolders": {},
     "sortDone": "Le tri est fini !",
-    "@sortDone": {}
+    "@sortDone": {},
+    "language": "Langue",
+    "@language": {},
+    "systemLanguage": "Langue du système",
+    "@systemLanguage": {}
 }

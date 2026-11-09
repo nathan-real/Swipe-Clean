@@ -48,6 +48,70 @@ class _SettingsPageState extends State<SettingsPage> {
     StorageService().saveThemeMode(isDark);
   }
 
+  // Langues disponibles, écrites dans leur propre langue
+  static const Map<String, String> _languageNames = {
+    'de': 'Deutsch',
+    'en': 'English',
+    'es': 'Español',
+    'fr': 'Français',
+    'hi': 'हिन्दी',
+    'it': 'Italiano',
+    'ru': 'Русский',
+    'uk': 'Українська',
+  };
+
+  // Change la langue de l'application (null = langue du système)
+  void _changeLanguage(String? languageCode) {
+    localeNotifier.value = languageCode != null ? Locale(languageCode) : null;
+    StorageService().saveLanguage(languageCode);
+  }
+
+  // Boîte de dialogue pour choisir la langue
+  void _showLanguageDialog(BuildContext context) {
+    final String? currentCode = localeNotifier.value?.languageCode;
+
+    // Une ligne de la liste, avec une coche si c'est la langue actuelle
+    Widget buildOption(String? code, String label) {
+      return ListTile(
+        title: Text(label, style: TextStyle(color: AppColors.text(context))),
+        trailing: currentCode == code
+            ? const Icon(Icons.check_rounded, color: AppColors.main)
+            : null,
+        onTap: () {
+          Navigator.pop(context);
+          _changeLanguage(code);
+        },
+      );
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        backgroundColor: AppColors.backgroundNavBar(context),
+        surfaceTintColor: Colors.transparent,
+        title: Text(
+          AppLocalizations.of(context)!.language,
+          style: TextStyle(
+            color: AppColors.text(context),
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+        contentPadding: const EdgeInsets.symmetric(vertical: 10),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              buildOption(null, AppLocalizations.of(context)!.systemLanguage),
+              for (final entry in _languageNames.entries)
+                buildOption(entry.key, entry.value),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
 
   @override
   Widget build(BuildContext context) {
@@ -189,6 +253,20 @@ class _SettingsPageState extends State<SettingsPage> {
                     inactiveThumbColor: Colors.grey,
                     inactiveTrackColor: Colors.grey.withValues(alpha: 0.3),
                   ),
+          ),
+
+          // Choix de la langue
+          ListTile(
+            contentPadding: const EdgeInsets.only(left: 30.0, right: 30.0),
+            leading: const Icon(Icons.language_rounded),
+            title: Text(AppLocalizations.of(context)!.language),
+            subtitle: Text(
+              localeNotifier.value == null
+                  ? AppLocalizations.of(context)!.systemLanguage
+                  : _languageNames[localeNotifier.value!.languageCode] ?? '',
+            ),
+            trailing: const Icon(Icons.chevron_right_rounded),
+            onTap: () => _showLanguageDialog(context),
           ),
         ],
       ),

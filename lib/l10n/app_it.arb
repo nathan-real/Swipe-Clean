@@ -40,5 +40,7 @@
     "spaceSaved": "Spazio liberato",
     "restartSort": "Ricomincia lo smistamento",
     "backToFolders": "Torna alle cartelle",
-    "sortDone": "Smistamento completato!"
+    "sortDone": "Smistamento completato!",
+    "language": "Lingua",
+    "systemLanguage": "Lingua di sistema"
 }

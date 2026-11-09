@@ -98,4 +98,23 @@ class StorageService {
     final prefs = await SharedPreferences.getInstance();
     return prefs.getBool(_themeKey) ?? false;
   }
+
+  // Clé pour la langue choisie
+  static const String _languageKey = 'language_code';
+
+  // Sauvegarder la langue choisie (null = langue du système)
+  Future<void> saveLanguage(String? languageCode) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (languageCode == null) {
+      await prefs.remove(_languageKey);
+    } else {
+      await prefs.setString(_languageKey, languageCode);
+    }
+  }
+
+  // Lire la langue choisie (null = langue du système)
+  Future<String?> getLanguage() async {
+    final prefs = await SharedPreferences.getInstance();
+    return prefs.getString(_languageKey);
+  }
 }

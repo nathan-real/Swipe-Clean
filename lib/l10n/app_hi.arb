@@ -40,5 +40,7 @@
     "spaceSaved": "खाली की गई जगह",
     "restartSort": "छंटाई फिर से शुरू करें",
     "backToFolders": "फ़ोल्डर पर वापस जाएं",
-    "sortDone": "छंटाई पूरी हुई!"
+    "sortDone": "छंटाई पूरी हुई!",
+    "language": "भाषा",
+    "systemLanguage": "सिस्टम की भाषा"
 }

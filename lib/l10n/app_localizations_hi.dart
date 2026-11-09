@@ -132,4 +132,10 @@ class AppLocalizationsHi extends AppLocalizations {
 
   @override
   String get sortDone => 'छंटाई पूरी हुई!';
+
+  @override
+  String get language => 'भाषा';
+
+  @override
+  String get systemLanguage => 'सिस्टम की भाषा';
 }

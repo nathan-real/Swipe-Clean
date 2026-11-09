@@ -44,5 +44,7 @@
     "backToFolders": "Back to folders",
     "@backToFolders": {},
     "sortDone": "The sorting is done!",
-    "@sortDone": {}
+    "@sortDone": {},
+    "language": "Language",
+    "systemLanguage": "System language"
 }

@@ -132,4 +132,10 @@ class AppLocalizationsEs extends AppLocalizations {
 
   @override
   String get sortDone => '¡Clasificación terminada!';
+
+  @override
+  String get language => 'Idioma';
+
+  @override
+  String get systemLanguage => 'Idioma del sistema';
 }
